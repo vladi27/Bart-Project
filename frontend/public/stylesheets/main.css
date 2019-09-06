@@ -1,0 +1,21 @@
+.dd-wrapper {
+  font-size: 1.6rem;
+  user-select: none;
+  position: relative;
+  width: 20px;
+}
+
+.test {
+  color: red;
+  position: relative;
+  margin-bottom: 200px;
+}
+
+.body {
+  font: inherit;
+}
+
+.react-select__menu {
+  margin-bottom: 200px;
+  position: relative;
+}
