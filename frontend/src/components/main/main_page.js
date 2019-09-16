@@ -36,9 +36,14 @@ class MainPage extends Component {
       .then(response => this.setState({ routes: this.props.routes }));
     this.props.fetchStations();
 
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 19, 20].map(ele =>
-      this.props.fetchRouteStations(ele)
-    );
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 19, 20].map(ele => {
+      this.props.fetchRouteStations(ele);
+      this.props.fetchRouteSchedules(ele);
+    });
+
+    this.props.getCurrentEtas();
+
+    // this.props.fetchRouteSchedules(1);
 
     this.props.receiveWayPoints(jsonObject);
 
@@ -80,9 +85,11 @@ class MainPage extends Component {
     const options = allRoutes.map(ele => {
       return {
         value: ele.number,
-        label: ele.title
+        label: ele.name
       };
     });
+
+    console.log(options);
     const currentSelections = this.state.currentSelections;
     // const options = this.props.allRoutes.map(ele => ele.title);
     console.log(options);

@@ -4,6 +4,8 @@ import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
 import L from "leaflet";
 import { connect } from "react-redux";
 import { runInThisContext } from "vm";
+import Station from "./stations";
+import RouteContainer from "./route_container";
 
 class MapPage extends Component {
   constructor(props) {
@@ -46,17 +48,19 @@ class MapPage extends Component {
       });
     });
 
-    const el2 = abcd.reduce((acc, curr) => {
+    const stations = abcd.reduce((acc, curr) => {
       return [...acc, ...curr];
     }, []);
 
-    const waypoints = this.props.currentRoutes.map(ele => {
+    const way2 = {};
+
+    this.props.currentRoutes.forEach(ele => {
       let routeNum = Number(ele.value);
       console.log(routeNum);
-      return this.state.waypoints[routeNum - 1].waypoints;
+      way2["waypoints"] = this.state.waypoints[routeNum - 1].waypoints;
     });
 
-    console.log(waypoints);
+    console.log(way2);
 
     // const allPositions = el2.map(station => {
     //   let station2Lat = parseFloat(station.gtfs_latitude);
@@ -67,37 +71,47 @@ class MapPage extends Component {
 
     // this.setState({ positions: allPositions });
 
-    console.log(el2);
     const position = [37.844443, -122.252341];
+
     return (
       <Map center={position} zoom={11}>
         <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
-        {el2.map((station, idx) => {
-          console.log(station);
-          let station2Lat = parseFloat(station.gtfs_latitude);
-          let station2Long = parseFloat(station.gtfs_longitude);
-          let arr = [station2Lat, station2Long];
+        {this.props.currentRoutes.map(ele => {
+          let route = routes[ele.value];
+          let schedule = this.props.schedules[route.number];
+
+          // let station2Lat = parseFloat(station.gtfs_latitude);
+          // let station2Long = parseFloat(station.gtfs_longitude);
+          // let arr = [station2Lat, station2Long];
           //   this.handleState(arr);
-          //   this.setState({ positions: arr });
+          //   this.setState({positions: arr });
 
           return (
-            <CircleMarker
-              key={`marker-${station.abbr}`}
-              center={arr}
-              radius={10}
-            ></CircleMarker>
+            // <Station station={station} key={`marker-${station.abbr}`}></Station>
+
+            <RouteContainer
+              route={route}
+              allStations={this.props.allStations}
+              waypoints={way2}
+              schedule={schedule}
+            ></RouteContainer>
           );
         })}
-        {waypoints.map(ele => {
+        ; }
+        {/* {Object.values(way2.waypoints).map(ele => {
           return <Polyline positions={ele} />;
-        })}
+        })} */}
       </Map>
     );
   }
 }
 
 const msp = state => {
-  return { allStations: state.stations, routes: state.routes };
+  return {
+    allStations: state.stations,
+    routes: state.routes,
+    schedules: state.schedules
+  };
 };
 
 export default connect(

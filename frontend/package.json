@@ -3,20 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "array-flatten": "^2.1.2",
     "axios": "^0.19.0",
+    "geolib": "^3.0.4",
     "json-loader": "^0.5.7",
     "jwt-decode": "^2.2.0",
     "leaflet": "^1.5.1",
-    "react": "^16.6.3",
-    "react-dom": "^16.6.3",
-    "react-redux": "^6.0.0",
+    "leaflet-drift-marker": "^1.0.3",
+    "lodash.indexof": "^4.0.5",
+    "moment": "^2.24.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-leaflet": "^2.4.0",
+    "react-redux": "^6.0.1",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.1",
     "react-select": "^3.0.4",
     "reactjs-dropdown-component": "^1.0.6",
-    "redux": "^4.0.1",
+    "redux": "^4.0.4",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "to-time": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -33,5 +40,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "eslint": "^6.4.0"
+  }
 }

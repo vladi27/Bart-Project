@@ -4,7 +4,9 @@ import {
   getInitialStationDataSouth,
   getInitialStationDataNorth,
   getRoutes,
-  getRouteStations
+  getSchedules,
+  getRouteStations,
+  fetchCurrentEtas
 
   // getRouteInfo
 } from "../util/station_api_util";
@@ -16,6 +18,8 @@ export const RECEIVE_ROUTE_INFO = "RECEIVE_ROUTE_INFO";
 export const RECEIVE_WAYPOINTS = "RECEIVE_WAYPOINTS";
 export const RECEIVE_ROUTES = "RECEIVE_ROUTES";
 export const RECEIVE_ROUTE_STATIONS = "RECEIVE_ROUTE_STATIONS";
+export const RECEIVE_CURRENT_ETAS = "RECEIVE_CURRENT_ETAS";
+export const RECEIVE_ROUTE_SCHEDULES = "RECEIVE_ROUTE_SCHEDULES";
 
 const stationsSouthBound = [
   "ANTC",
@@ -47,6 +51,77 @@ const stationsSouthBound = [
   "SFIA",
   "MLBR"
 ];
+
+const routes = {
+  1: {
+    hexcolor: "#ffff33",
+    destination: "Millbrae",
+    abbreviation: "MLBR",
+    direction: "South",
+    color: "Yellow"
+  },
+
+  2: {
+    hexcolor: "#ffff33",
+    abbreviation: "ANTC",
+    destination: "Antioch",
+    direction: "North",
+    color: "Yellow"
+  },
+
+  3: {
+    hexcolor: "#ffff33",
+    abbreviation: "RICH",
+    destination: " Richmond",
+    direction: "North",
+    color: "Orange"
+  },
+
+  4: {
+    hexcolor: "#ffff33",
+    destination: "Warm Springs",
+    abbreviation: "WARM",
+    direction: "South",
+    color: "Orange"
+  },
+
+  5: {
+    color: "Green",
+    hexcolor: "#339933",
+    destination: "DALY",
+    direction: "South",
+    abbreviation: "DALY"
+  },
+
+  6: {
+    color: "Green",
+    hexcolor: "#339933",
+    destination: "Warm Springs",
+    abbreviation: "WARM",
+    abbreviation: "DALY",
+    direction: "North"
+  },
+
+  7: {
+    color: "Red",
+    hexcolor: "#ff0000",
+
+    direction: "South",
+
+    destination: "Millbrae",
+    abbreviation: "MLBR"
+  },
+
+  8: {
+    color: "Red",
+    hexcolor: "#ff0000",
+
+    direction: "North",
+
+    destination: "Richmond",
+    abbreviation: "RCH"
+  }
+};
 const nextTrain = etas => {
   let earliestDep = etas[0][1];
   if (earliestDep === "leaving") {
@@ -94,7 +169,12 @@ export const receiveRoutes = routes => {
     routes: routes.data.root.routes.route
   };
 };
-
+export const receiveCurrentEtas = etas => {
+  return {
+    type: RECEIVE_CURRENT_ETAS,
+    etas: etas.data.root.station
+  };
+};
 export const receiveRouteInfo = info => ({
   type: RECEIVE_ROUTE_INFO,
   info
@@ -114,15 +194,30 @@ export const receiveRouteStations = stations => ({
   type: RECEIVE_ROUTE_STATIONS,
   stations: stations.data.root.routes.route
 });
+export const receiveRouteSchedules = (schedules, id) => ({
+  type: RECEIVE_ROUTE_SCHEDULES,
+  schedules: schedules.data.root.route,
+  id
+});
 
 export const receiveWayPoints = jsonObj => ({
   type: RECEIVE_WAYPOINTS,
   waypoints: jsonObj
 });
 
+export const getCurrentEtas = () => dispatch =>
+  fetchCurrentEtas()
+    .then(etas => dispatch(receiveCurrentEtas(etas)))
+    .catch(err => console.log(err));
+
 export const fetchRouteStations = id => dispatch =>
   getRouteStations(id)
     .then(stations => dispatch(receiveRouteStations(stations)))
+    .catch(err => console.log(err));
+
+export const fetchRouteSchedules = id => dispatch =>
+  getSchedules(id)
+    .then(schedules => dispatch(receiveRouteSchedules(schedules, id)))
     .catch(err => console.log(err));
 
 export const fetchRoutes = () => dispatch =>

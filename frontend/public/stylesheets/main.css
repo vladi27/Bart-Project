@@ -19,3 +19,9 @@
   margin-bottom: 200px;
   position: relative;
 }
+
+.leaflet-container {
+  overflow: hidden;
+  height: 800px;
+  width: 100%;
+}

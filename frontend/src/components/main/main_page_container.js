@@ -6,7 +6,9 @@ import {
   fetchInitialStationDataNorth,
   receiveWayPoints,
   fetchRoutes,
-  fetchRouteStations
+  getCurrentEtas,
+  fetchRouteStations,
+  fetchRouteSchedules
 } from "../../actions/station_actions";
 import { fetchSpaceStation } from "../../actions/space_station_actions";
 import MainPage from "./main_page";
@@ -27,7 +29,9 @@ const mapDispatchToProps = dispatch => {
   return {
     fetchStations: () => dispatch(fetchStations()),
     fetchRoutes: () => dispatch(fetchRoutes()),
+    getCurrentEtas: () => dispatch(getCurrentEtas()),
     fetchRouteStations: id => dispatch(fetchRouteStations(id)),
+    fetchRouteSchedules: id => dispatch(fetchRouteSchedules(id)),
     fetchRouteInfo: () => dispatch(fetchRouteInfo()),
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
     fetchSpaceStation: () => dispatch(fetchSpaceStation()),
