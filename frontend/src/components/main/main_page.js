@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import "leaflet/dist/leaflet.css";
 import { Map, TileLayer, CircleMarker } from "react-leaflet";
 import L from "leaflet";
@@ -7,10 +7,11 @@ import Select from "react-select";
 import jsonObject from "../../waypoints/all_shapes";
 import MapContainer from "./map_container";
 import { throws } from "assert";
-
+import WindowedSelect from "react-windowed-select";
+import { components, createFilter } from "react-windowed-select";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
-class MainPage extends Component {
+class MainPage extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -47,6 +48,10 @@ class MainPage extends Component {
 
     this.props.receiveWayPoints(jsonObject);
 
+    setInterval(() => {
+      this.props.getCurrentEtas();
+    }, 60000);
+
     //   .then(response => this.setState({ stations: response.stations }));
     // this.props
     //   .fetchRouteInfo()
@@ -64,11 +69,23 @@ class MainPage extends Component {
   //   clearInterval(this.interval);
   // }
 
+  //   updateValue(value) {
+  //   this.setState({ value: value });
+  // },
+  // getValue: function() {
+  //   if (!this.state.value) {
+  //     return 'Some default text';
+  //   }
+  //   return this.state.value;
+  // }
+
   handleChange(value) {
-    // let temp = JSON.parse(JSON.stringify(this.state[key]));
-    // let ele = temp[id];
     this.setState({ currentSelections: value });
   }
+
+  // customFilter() {
+  //   createFilter({ ignoreAccents: false });
+  // }
 
   // checkState() {
   //   this.setInterval(() => {
@@ -82,17 +99,77 @@ class MainPage extends Component {
 
   render() {
     const allRoutes = this.props.routes;
-    const options = allRoutes.map(ele => {
-      return {
-        value: ele.number,
-        label: ele.name
-      };
-    });
+    const customFilter = createFilter({ ignoreAccents: false });
+    const options = [
+      {
+        value: "20",
+        label: "Oakland Int'l Airport - Coliseum"
+      },
+      {
+        value: "19",
+        label: "Coliseum - Oakland Int'l Airport"
+      },
+      {
+        value: "14",
+        label: "SFO - Millbrae"
+      },
+      {
+        value: "13",
+        label: "Millbrae - SFO"
+      },
+      {
+        value: "12",
+        label: "Daly City - Dublin/Pleasanton"
+      },
+      {
+        value: "11",
+        label: "Dublin/Pleasanton - Daly City"
+      },
+      {
+        value: "10",
+        label: "MacArthur - Dublin/Pleasanton"
+      },
+      {
+        value: "9",
+        label: "Dublin/Pleasanton - MacArthur"
+      },
+      {
+        value: "8",
+        label: "Millbrae/Daly City - Richmond"
+      },
+      {
+        value: "7",
+        label: "Richmond - Daly City/Millbrae"
+      },
+      {
+        value: "6",
+        label: "Daly City - Warm Springs/South Fremont"
+      },
+      {
+        value: "5",
+        label: "Warm Springs/South Fremont - Daly City"
+      },
+      {
+        value: "4",
+        label: "Richmond - Warm Springs/South Fremont"
+      },
+      {
+        value: "3",
+        label: "Warm Springs/South Fremont - Richmond"
+      },
+      {
+        value: "2",
+        label: "Millbrae/SFIA - Antioch"
+      },
+      {
+        value: "1",
+        label: "Antioch - SFIA/Millbrae"
+      }
+    ];
 
-    console.log(options);
     const currentSelections = this.state.currentSelections;
     // const options = this.props.allRoutes.map(ele => ele.title);
-    console.log(options);
+
     const position = [37.844443, -122.252341];
     console.log(jsonObject);
 
@@ -115,13 +192,15 @@ class MainPage extends Component {
       return (
         <div>
           <div className="react-select__menu">
-            <Select
+            <WindowedSelect
               options={options}
               isMulti
+              values={this.state.currentSelections}
               styles={{ marginBottom: "200px" }}
               placeholder={"hello"}
               className="basic-multi-select"
               classNamePrefix="select"
+              filterOption={customFilter}
               onChange={this.handleChange.bind(this)}
             />
           </div>

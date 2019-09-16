@@ -94,6 +94,7 @@ class MapPage extends Component {
               allStations={this.props.allStations}
               waypoints={way2}
               schedule={schedule}
+              getCurrentEtas={this.props.getCurrentEtas}
             ></RouteContainer>
           );
         })}

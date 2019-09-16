@@ -25,3 +25,87 @@
   height: 800px;
   width: 100%;
 }
+
+.custom-div-iconffff33 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #ffff33;
+}
+.custom-div-iconff9933 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #ff9933;
+}
+.custom-div-icon339933 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #339933;
+}
+.custom-div-iconff0000 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #ff0000;
+}
+
+.custom-div-icon i.awesome {
+  margin: 12px auto;
+  font-size: 17px;
+}
+
+.tffff33 {
+  background: "#ffff33";
+}
+.tff9933 {
+  background: "#ff9933";
+}
+
+.leaflet-marker-icon {
+  background: transparent;
+}
+
+.t339933 {
+  background: "#339933";
+}
+
+.tff0000 {
+  background: "#ff0000";
+}
+
+.marker {
+  -webkit-transition: all 7s ease-in-out;
+  -moz-transition: all 7s ease-in-out;
+  -o-transition: all 7s ease-in-out;
+  transition: all 7s ease-in-out;
+
+  border-radius: 15px;
+  border: 1px solid #fff;
+  display: inline-block;
+  width: auto !important;
+  height: auto !important;
+  width: 30px !important;
+  text-align: center;
+  height: 30px !important;
+  line-height: 30px;
+  color: #fff;
+  font-weight: bold;
+}
