@@ -52,7 +52,7 @@ const stationsSouthBound = [
   "MLBR"
 ];
 
-const routes = {
+export const routes = {
   1: {
     hexcolor: "#ffff33",
     destination: "Millbrae",

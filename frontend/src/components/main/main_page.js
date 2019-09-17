@@ -48,9 +48,9 @@ class MainPage extends PureComponent {
 
     this.props.receiveWayPoints(jsonObject);
 
-    setInterval(() => {
-      this.props.getCurrentEtas();
-    }, 60000);
+    // setInterval(() => {
+    //   this.props.getCurrentEtas();
+    // }, 60000);
 
     //   .then(response => this.setState({ stations: response.stations }));
     // this.props

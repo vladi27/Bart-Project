@@ -9,7 +9,9 @@ import merge from "lodash/merge";
 import indexOf from "lodash/indexOf";
 import findIndex from "lodash/findIndex";
 import TrainContainer from "./train_container";
+
 let _ = require("lodash.indexof");
+let toTime = require("to-time");
 
 let flatten = require("array-flatten");
 
@@ -83,7 +85,7 @@ const routes = {
   }
 };
 
-class Route extends PureComponent {
+class Route extends Component {
   constructor(props) {
     super(props);
     console.log(this.props);
@@ -98,6 +100,7 @@ class Route extends PureComponent {
     this.setState(prev => ({
       waypoints: prev.waypoints.concat([waypoints4])
     }));
+    // this.setState({ route: this.props.route });
   }
 
   renderStops() {
@@ -163,17 +166,6 @@ class Route extends PureComponent {
 
     console.log(stationEtds);
 
-    let stationArivals = stationEtds.map(destination => {
-      let results = [];
-      console.log(destination.abbreviation);
-      console.log(routeDestination);
-      if (routeDestination.includes(destination.abbreviation)) {
-        console.log("hi");
-        results.push(destination);
-      }
-
-      return destination.departures;
-    });
     const arr = [];
     stationEtds.forEach(ele => {
       console.log(ele);
@@ -240,6 +232,9 @@ class Route extends PureComponent {
 
     newRouteStations.forEach((ele, idx) => {
       let scheduleData = schedule[idx];
+      if (scheduleData && scheduleData.timeToDestination) {
+        ele["timeToDestination"] = scheduleData.timeToDestination;
+      }
 
       if (scheduleData && scheduleData.timeToNextStation) {
         ele["timeToNextStation"] = scheduleData.timeToNextStation;
@@ -247,14 +242,14 @@ class Route extends PureComponent {
       }
     });
 
-    newRouteStations.forEach((ele, idx) => {
-      let scheduleData = schedule[idx];
+    // newRouteStations.forEach((ele, idx) => {
+    //   let scheduleData = schedule[idx];
 
-      if (scheduleData && scheduleData.timeToNextStation) {
-        ele["timeToNextStation"] = scheduleData.timeToNextStation;
-        ele["nextStation"] = scheduleData.nextStationName;
-      }
-    });
+    //   if (scheduleData && scheduleData.timeToNextStation) {
+    //     ele["timeToNextStation"] = scheduleData.timeToNextStation;
+    //     ele["nextStation"] = scheduleData.nextStationName;
+    //   }
+    // });
 
     let obj = {};
 
@@ -266,8 +261,10 @@ class Route extends PureComponent {
     console.log(obj);
 
     if (Object.keys(obj).length > 0) {
+      console.log(newRouteStations);
       return newRouteStations.map((station, idx) => {
         let timeToNextStation = station["timeToNextStation"];
+        let timeToDestination = station["timeToDestination"];
         let nextStationName = station["nextStation"];
         let nextStation = {};
         console.log(station);
@@ -293,92 +290,83 @@ class Route extends PureComponent {
           if (timetoDepart === "Leaving") {
             console.log("leaving");
             let destination = obj[station.currentDestination];
+            console.log(station);
             console.log(destination);
+            let distance;
+
+            if (destination) {
+              distance = geolib.getDistance(
+                station.location,
+                destination.location
+              );
+            }
+
+            console.log(distance, station.name);
+
             let nearestPoint = geolib.findNearest(
               station.location,
               waypoints2.waypoints
             );
+            let nearestPoint3;
             // let nearestPoint2 = geolib.findNearest(
             //   nextStation.location,
             //   waypoints2.waypoints
             // );
-            let nearestPoint3 = geolib.findNearest(
-              destination.location,
-              waypoints2.waypoints
-            );
+            if (destination) {
+              nearestPoint3 = geolib.findNearest(
+                destination.location,
+                waypoints2.waypoints
+              );
+            }
+            //   let distance2 = geolib.getDistance(
+            //       station.location,
+            //       destination.location
+            //   );
+            //   71725 "San Francisco International Airport"
 
             // console.log(nearestPoint);
             // console.log(nearestPoint2);
             let stationIdx = indexOf(waypoints2.waypoints, nearestPoint);
             // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
             let stationIdx3 = indexOf(waypoints2.waypoints, nearestPoint3);
+
             let waypointsSlice = waypoints2.waypoints.slice(
               stationIdx,
               stationIdx3 + 1
             );
-            // console.log(waypointsSlice);
-            // console.log(route);
-            count.push("1");
-            console.log(count);
-            return (
-              <TrainContainer markers={waypointsSlice} color={route.hexcolor} />
-            );
+            // let distanceToCover = geolib.getPathLength(waypointsSlice);
+            // console.log(distanceToCover, station.name);
+            console.log(waypointsSlice);
+            let metersBetweenWayPoints;
+            if (waypointsSlice.length > 2) {
+              metersBetweenWayPoints = Math.round(
+                distance / waypointsSlice.length
+              );
+              console.log(metersBetweenWayPoints);
+              // console.log(waypointsSlice);
+              // console.log(route);
+              count.push("1");
+              console.log(count);
+              let ms2;
+              if (timeToDestination) {
+                let wpm = Math.round(
+                  (timeToDestination * 60) / waypointsSlice.length
+                );
+                ms2 = toTime.fromSeconds(wpm).ms();
+              }
+              console.log(ms2);
+
+              let ms3 = ms2 || 4000;
+              return (
+                <TrainContainer
+                  markers={waypointsSlice}
+                  color={route.hexcolor}
+                  interval={ms3}
+                />
+              );
+            }
           }
-
           if (
-            nextStation !== undefined &&
-            nextStation.departures === undefined &&
-            routeDestination.includes(station.currentDestination)
-          ) {
-            console.log("last station");
-            let stationLocation = station.location;
-            let nextStationLocation = nextStation.location;
-            let distance = geolib.getDistance(
-              stationLocation,
-              nextStationLocation
-            );
-            console.log(station.location);
-            // let bool = ar.some(function (arr) {
-            //     return arr.every(function (prop, index) {
-            //         return val[index] === prop
-            //     })
-            // });
-            let nearestPoint = geolib.findNearest(
-              station.location,
-              waypoints2.waypoints
-            );
-            let nearestPoint2 = geolib.findNearest(
-              nextStation.location,
-              waypoints2.waypoints
-            );
-
-            // console.log(nearestPoint);
-            // console.log(nearestPoint2);
-            let stationIdx = indexOf(waypoints2["waypoints"], nearestPoint);
-            let stationIdx2 = indexOf(waypoints2["waypoints"], nearestPoint2);
-
-            // console.log(stationIdx);
-            // console.log(stationIdx2);
-            let waypointsSlice = waypoints2.waypoints.slice(
-              stationIdx,
-              stationIdx2 + 1
-            );
-
-            // let distanceCovered = nextStationTimetoArrive / timeToNextStation;
-
-            // console.log(waypoints);
-            // console.log(waypointsSlice);
-
-            // console.log(waypoints[0]);
-
-            let stationIdx5 = Math.round(waypointsSlice.length * 0.7);
-            // console.log(stationIdx5);
-            let slice2 = waypointsSlice.slice(stationIdx5);
-            // console.log(slice2);
-            count.push("1");
-            console.log(count);
-            return <TrainContainer markers={slice2} color={route.hexcolor} />;
-          } else if (
             nextStation !== undefined &&
             nextStation.departures !== undefined
             // routeDestination.includes(station.currentDestination) === false
@@ -404,6 +392,7 @@ class Route extends PureComponent {
               console.log("in-between");
               let stationLocation = station.location;
               let nextStationLocation = nextStation.location;
+              let destination = obj[station.currentDestination];
               let distance = geolib.getDistance(
                 stationLocation,
                 nextStationLocation
@@ -424,19 +413,83 @@ class Route extends PureComponent {
                 waypoints2.waypoints
               );
 
+              let nearestPoint3;
+              // let nearestPoint2 = geolib.findNearest(
+              //   nextStation.location,
+              //   waypoints2.waypoints
+              // );
+              if (destination) {
+                nearestPoint3 = geolib.findNearest(
+                  destination.location,
+                  waypoints2.waypoints
+                );
+              }
+
               //   console.log(nearestPoint);
               //   console.log(nearestPoint2);
               let stationIdx = indexOf(waypoints2["waypoints"], nearestPoint);
               let stationIdx2 = indexOf(waypoints2["waypoints"], nearestPoint2);
+              let stationIdx3 = indexOf(waypoints2["waypoints"], nearestPoint3);
 
-              //   console.log(stationIdx);
-              //   console.log(stationIdx2);
-              let waypointsSlice = waypoints2.waypoints.slice(
-                stationIdx,
-                stationIdx2 + 1
-              );
+              console.log(stationIdx);
+              console.log(stationIdx3);
 
-              let distanceCovered = nextStationTimetoArrive / timeToNextStation;
+              if (stationIdx && stationIdx3) {
+                let waypointsSlice2 = waypoints2.waypoints.slice(
+                  stationIdx,
+                  stationIdx3
+                );
+
+                console.log(waypointsSlice2);
+                // let distance2 = geolib.getDistance(
+                //   waypointsSlice2[0],
+                //   waypointsSlice2[waypointsSlice2.length - 1]
+                // );
+                let distanceToCover = geolib.getPathLength(waypointsSlice2);
+                console.log(distanceToCover, station.name);
+
+                //   let distanceCovered = nextStationTimetoArrive / timeToNextStation;
+
+                let distanceCovered =
+                  1 - waypointsSlice2.length / waypoints2.waypoints.length;
+
+                let abc = Math.round(
+                  waypoints2.waypoints.length * distanceCovered
+                );
+                let slice3 = waypoints2.waypoints.slice(abc, stationIdx3);
+
+                let newDistance = geolib.getPathLength(slice3);
+
+                console.log(newDistance, distanceToCover);
+
+                let metersBetweenWayPoints;
+
+                metersBetweenWayPoints = Math.round(
+                  newDistance / slice3.length
+                );
+                console.log(metersBetweenWayPoints);
+                // console.log(waypointsSlice);
+                // console.log(route);
+                count.push("1");
+                console.log(count);
+                let ms2;
+                if (timeToDestination) {
+                  let wpm = Math.round(
+                    (timeToDestination * 60) / slice3.length
+                  );
+                  ms2 = toTime.fromSeconds(wpm).ms();
+                }
+                console.log(ms2);
+
+                let ms3 = ms2 || 2000;
+                return (
+                  <TrainContainer
+                    markers={slice3}
+                    color={route.hexcolor}
+                    interval={ms3}
+                  />
+                );
+              }
 
               // console.log(waypoints);
               //   console.log(waypointsSlice);
@@ -444,14 +497,115 @@ class Route extends PureComponent {
               //   // console.log(waypoints[0]);
               //   console.log(distanceCovered);
 
-              let stationIdx5 = Math.round(
-                waypointsSlice.length * distanceCovered
-              );
-              //   console.log(stationIdx5);
-              let slice2 = waypointsSlice.slice(stationIdx5);
+              //   let stationIdx5 = Math.round(
+              //     waypointsSlice.length * distanceCovered
+              //   );
+              //   //   console.log(stationIdx5);
+              //   let slice2 = waypointsSlice.slice(stationIdx5);
               console.log(count);
               //   console.log(slice2);
-              return <TrainContainer markers={slice2} color={route.hexcolor} />;
+              //   return <TrainContainer markers={slice2} color={route.hexcolor} />;
+            }
+            if (
+              nextStation !== undefined &&
+              nextStation.departures === undefined &&
+              routeDestination.includes(station.currentDestination)
+            ) {
+              console.log("last station");
+              let stationLocation = station.location;
+              let nextStationLocation = nextStation.location;
+              let destination = obj[station.currentDestination];
+              let distance = geolib.getDistance(
+                stationLocation,
+                nextStationLocation
+              );
+              console.log(station.location);
+              // let bool = ar.some(function (arr) {
+              //     return arr.every(function (prop, index) {
+              //         return val[index] === prop
+              //     })
+              // });
+              let nearestPoint = geolib.findNearest(
+                station.location,
+                waypoints2.waypoints
+              );
+              // let nearestPoint2 = geolib.findNearest(
+              //   nextStation.location,
+              //   waypoints2.waypoints
+              // );
+
+              // // console.log(nearestPoint);
+              // // console.log(nearestPoint2);
+              // let stationIdx = indexOf(waypoints2["waypoints"], nearestPoint);
+              // let stationIdx2 = indexOf(waypoints2["waypoints"], nearestPoint2);
+
+              // // console.log(stationIdx);
+              // // console.log(stationIdx2);
+              // let waypointsSlice = waypoints2.waypoints.slice(
+              //   stationIdx,
+              //   stationIdx2 + 1
+              // );
+
+              // //
+
+              // // console.log(waypoints);
+              // // console.log(waypointsSlice);
+
+              // // console.log(waypoints[0]);
+
+              // let stationIdx5 = Math.round(waypointsSlice.length * 0.7);
+              // // console.log(stationIdx5);
+              // let slice2 = waypointsSlice.slice(stationIdx5);
+              // // console.log(slice2);
+
+              let nearestPoint3;
+              // let nearestPoint2 = geolib.findNearest(
+              //   nextStation.location,
+              //   waypoints2.waypoints
+              // );
+              if (destination) {
+                nearestPoint3 = geolib.findNearest(
+                  destination.location,
+                  waypoints2.waypoints
+                );
+              }
+
+              // console.log(nearestPoint);
+              // console.log(nearestPoint2);
+              let stationIdx = indexOf(waypoints2.waypoints, nearestPoint);
+              // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
+              let stationIdx3 = indexOf(waypoints2.waypoints, nearestPoint3);
+              let waypointsSlice = waypoints2.waypoints.slice(
+                stationIdx,
+                stationIdx3 + 1
+              );
+
+              let metersBetweenWayPoints;
+              {
+                metersBetweenWayPoints = Math.round(
+                  distance / waypointsSlice.length
+                );
+                console.log(metersBetweenWayPoints);
+                // console.log(waypointsSlice);
+                // console.log(route);
+                count.push("1");
+                console.log(count);
+                let wpm = Math.round(
+                  (timeToDestination * 60) / waypointsSlice.length
+                );
+                let ms2 = toTime.fromSeconds(wpm).ms();
+                console.log(waypointsSlice);
+                console.log(route);
+                count.push("1");
+                console.log(count);
+                return (
+                  <TrainContainer
+                    markers={waypointsSlice}
+                    color={route.hexcolor}
+                    interval={ms2}
+                  />
+                );
+              }
             }
           }
         }
@@ -464,17 +618,17 @@ class Route extends PureComponent {
     const allStations = this.props.allStations;
     const schedule = this.props.schedule;
     const route = this.props.route;
-    const routeNumber = route.number;
-    const routeDestination = routes[routeNumber].abbreviation;
-    console.log(routeDestination);
-    const waypoints3 = this.props.waypoints.waypoints || [];
-    const routeStations = route.stations;
-    const newRouteStations = routeStations.map(ele => {
-      let station2 = allStations[ele];
-      return station2;
-    });
+    // const routeNumber = route.number;
+    // const routeDestination = routes[routeNumber].abbreviation;
+    // console.log(routeDestination);
+    // const waypoints3 = this.props.waypoints.waypoints || [];
+    // const routeStations = route.stations;
+    // const newRouteStations = routeStations.map(ele => {
+    //   let station2 = allStations[ele];
+    //   return station2;
+    // });
 
-    console.log(waypoints3);
+    // console.log(waypoints3);
 
     //     console.log(newRouteStations);
 
@@ -579,23 +733,27 @@ class Route extends PureComponent {
     // });
 
     // console.log(newRouteStations);
-    return (
-      <div>
-        {/* {route.stations.map(ele2 => {
+    if (route.length === 0) {
+      return <p>loading</p>;
+    } else {
+      return (
+        <div>
+          {/* {route.stations.map(ele2 => {
           let station = allStations[ele2];
           return (
             <Station station={station} key={`marker-${station.abbr}`}></Station>
           );
         })} */}
 
-        {this.renderStops()}
-        {/* {waypoints3.map(ele => {
+          {this.renderStops()}
+          {/* {waypoints3.map(ele => {
           return <Polyline positions={ele} />;
         })} */}
-        {this.drawPolyline()}
-        {this.renderTrains()}
-      </div>
-    );
+          {this.drawPolyline()}
+          {this.renderTrains()}
+        </div>
+      );
+    }
   }
 }
 

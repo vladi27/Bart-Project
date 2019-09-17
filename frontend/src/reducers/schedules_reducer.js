@@ -24,12 +24,39 @@ const scheduleReducer = (state = {}, action) => {
 
       console.log(trainRoute);
 
-      trainRoute.map((stop, idx) => {
+      trainRoute.forEach((stop, idx) => {
         let newObj = {};
         // console.log(idx);
 
         let stationName = stop["@station"];
+
+        let lastStop = trainRoute[trainRoute.length - 1];
+        let origTime = lastStop["@origTime"];
+        let departureTime2 = stop["@origTime"];
+        let dt3 = moment(departureTime2, ["h:mm A"]).format("HH:mm");
+        let dt4 = moment(origTime, ["h:mm A"]).format("HH:mm");
+        let arr3 = dt3.split(":");
+
+        let arr4 = dt4.split(":");
+
+        if (arr3.length === 2 && arr4.length === 2) {
+          let mins3 = toTime
+            .fromHours(arr3[0])
+            .addMinutes(arr3[1])
+            .minutes();
+          let mins4 = toTime
+            .fromHours(arr4[0])
+            .addMinutes(arr4[1])
+            .minutes();
+          let diff2 = mins4 - mins3;
+          console.log(diff2);
+          if (diff2 !== 0) {
+            newObj["timeToDestination"] = diff2;
+            console.log(newObj);
+          }
+        }
         newObj["stationName"] = stationName;
+
         if (trainRoute[idx + 1] !== undefined) {
           let nextStation = randomRoute.stop[idx + 1];
 
@@ -61,9 +88,9 @@ const scheduleReducer = (state = {}, action) => {
           }
 
           // console.log(diff);
-
-          results.push(newObj);
         }
+        console.log(newObj);
+        results.push(newObj);
       });
 
       // action.schedules.train.map(train => {

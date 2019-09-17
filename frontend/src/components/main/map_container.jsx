@@ -40,17 +40,17 @@ class MapPage extends Component {
     console.log(this.props);
     console.log(this.state);
 
-    let abcd = this.props.currentRoutes.map(ele => {
-      let route = routes[ele.value];
-      let stations = route.stations;
-      return stations.map(ele2 => {
-        return allStations[ele2];
-      });
-    });
+    // let abcd = this.props.currentRoutes.map(ele => {
+    //   let route = routes[ele.value];
+    //   let stations = route.stations;
+    //   return stations.map(ele2 => {
+    //     return allStations[ele2];
+    //   });
+    // });
 
-    const stations = abcd.reduce((acc, curr) => {
-      return [...acc, ...curr];
-    }, []);
+    // const stations = abcd.reduce((acc, curr) => {
+    //   return [...acc, ...curr];
+    // }, []);
 
     const way2 = {};
 
