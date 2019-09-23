@@ -32,6 +32,7 @@ class LiveTrain extends Component {
     const departureID = this.props.departureID;
     const allStations = this.props.allStations;
     const routeLength = this.props.routeLength;
+    const delay = Number(this.props.delay);
 
     const currentDestination = this.props.currentDestination;
     const currentDestinationName = currentDestination.abbr;
@@ -40,27 +41,41 @@ class LiveTrain extends Component {
     const waypoints = this.props.waypoints;
     const hexcolor = this.props.hexcolor;
     const prevStationDepartures = this.props.prevStationDepartures;
+    const platform = this.props.platform;
+    console.log(prevStationDepartures);
 
     console.log(firstStationName);
+    console.log(delay, stationName);
     console.log(currentDestination);
 
-    console.log(currentStationID, stationName, currentDeparture);
+    console.log(currentStationID, stationName, currentDeparture, platform);
 
     if (currentDestinationName === stationName) {
       return;
     }
 
     if (
-      (stationName === firstStationName && currentDeparture !== "Leaving") ||
+      (stationName === firstStationName &&
+        currentDeparture !== "Leaving" &&
+        currentStationID === 0) ||
       (currentStationID === routeLength - 1 && currentDeparture === "Leaving")
     ) {
       console.log("first Station");
       return;
     }
 
-    if (currentStationID === 0 && currentDeparture === "Leaving") {
+    if (currentStationID === 0 && currentDeparture === "Leaving" && delay > 0) {
+      return;
+    }
+
+    if (
+      currentStationID === 0 &&
+      currentDeparture === "Leaving" &&
+      delay === 0
+    ) {
       let distance;
       console.log("first station leaving", stationName);
+      let stationLocation = allStations[stationName].location;
 
       distance = geolib.getDistance(
         allStations[stationName].location,
@@ -81,32 +96,32 @@ class LiveTrain extends Component {
         waypoints.waypoints
       );
 
-      let stationIdx = indexOf(waypoints.waypoints, nearestPoint);
-      // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
-      let stationIdx3 = indexOf(waypoints.waypoints, nearestPoint3);
+      //   let stationIdx = indexOf(waypoints.waypoints, nearestPoint);
+      //   // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
+      //   let stationIdx3 = indexOf(waypoints.waypoints, nearestPoint3);
 
-      let waypointsSlice = waypoints.waypoints.slice(
-        stationIdx,
-        stationIdx3 + 1
-      );
+      //   let waypointsSlice = waypoints.waypoints.slice(
+      //     stationIdx,
+      //     stationIdx3 + 1
+      //   );
 
-      console.log(waypointsSlice);
-      let metersBetweenWayPoints;
+      //   console.log(waypointsSlice);
+      //   let metersBetweenWayPoints;
 
-      metersBetweenWayPoints = Math.round(distance / waypointsSlice.length);
+      //   metersBetweenWayPoints = Math.round(distance / waypointsSlice.length);
 
-      console.log(metersBetweenWayPoints);
+      //   console.log(metersBetweenWayPoints);
 
-      let ms2;
+      //   let ms2;
 
-      console.log(timeToDestination, waypointsSlice);
+      //   console.log(timeToDestination, waypointsSlice);
 
-      let wpm = Math.round((timeToDestination * 60) / waypointsSlice.length);
-      ms2 = toTime.fromSeconds(wpm).ms();
+      //   let wpm = Math.round((timeToDestination * 60) / waypointsSlice.length);
+      //   ms2 = toTime.fromSeconds(wpm).ms();
 
-      console.log(ms2);
+      //   console.log(ms2);
 
-      let ms3 = ms2 || 4000;
+      //   let ms3 = ms2 || 4000;
       // let train = {
       //   markers: waypointsSlice,
       //   color: route.hexcolor,
@@ -114,13 +129,93 @@ class LiveTrain extends Component {
       //   station: station
       // };
       // console.log(train);
+      let ms3 = 20000;
 
       return (
         <TrainContainer
-          markers={waypointsSlice}
+          markers={[stationLocation, stationLocation]}
           color={hexcolor}
           interval={ms3}
         />
+      );
+    }
+
+    if (
+      currentStationID === 1 &&
+      hexcolor === "#ff9933" &&
+      stationName === "FRMT" &&
+      Number(currentDeparture) <= 6
+    ) {
+      console.log("FRMT");
+      let nearestPoint = geolib.findNearest(
+        allStations[stationName].location,
+        waypoints.waypoints
+      );
+      //   let nearestPoint2 = geolib.findNearest(
+      //     nextStation.location,
+      //     waypoints.waypoints
+      //   );
+
+      let nearestPoint3;
+      // let nearestPoint2 = geolib.findNearest(
+      //   nextStation.location,
+      //   waypoints2.waypoints
+      // );
+
+      nearestPoint3 = geolib.findNearest(
+        currentDestination.location,
+        waypoints.waypoints
+      );
+
+      //   console.log(nearestPoint);
+      //   console.log(nearestPoint2);
+      let stationIdx = indexOf(waypoints["waypoints"], nearestPoint);
+      //   let stationIdx2 = indexOf(waypoints["waypoints"], nearestPoint2);
+      let stationIdx3 = indexOf(waypoints["waypoints"], nearestPoint3);
+
+      console.log(stationIdx);
+      console.log(stationIdx3);
+
+      let waypointsSlice2 = waypoints.waypoints.slice(stationIdx, stationIdx3);
+
+      console.log(waypointsSlice2);
+      // let distance2 = geolib.getDistance(
+      //   waypointsSlice2[0],
+      //   waypointsSlice2[waypointsSlice2.length - 1]
+      // );
+      let distanceToCover = geolib.getPathLength(waypointsSlice2);
+      console.log(distanceToCover, station.name);
+
+      //   let distanceCovered = nextStationTimetoArrive / timeToNextStation;
+
+      let distanceCovered =
+        1 - waypointsSlice2.length / waypoints.waypoints.length;
+
+      let abc = Math.round(waypoints.waypoints.length * distanceCovered);
+      let slice3 = waypoints.waypoints.slice(abc, stationIdx3);
+
+      let newDistance = geolib.getPathLength(slice3);
+
+      console.log(newDistance, distanceToCover);
+
+      let metersBetweenWayPoints;
+
+      metersBetweenWayPoints = Math.round(newDistance / slice3.length);
+      console.log(metersBetweenWayPoints);
+      // console.log(waypointsSlice);
+      // console.log(route);
+
+      let ms2;
+      if (timeToDestination) {
+        let wpm = Math.round((timeToDestination * 60) / slice3.length);
+        ms2 = toTime.fromSeconds(wpm).ms();
+      }
+      console.log(ms2);
+
+      let ms3 = ms2 || 2000;
+
+      return (
+        <TrainContainer markers={slice3} color={hexcolor} interval={ms3} />
       );
     }
 
@@ -130,6 +225,7 @@ class LiveTrain extends Component {
       let prevStation = allStations[prevStationName];
       console.log(prevStation, stationName);
       console.log("first station", stationName);
+      console.log(stationName, firstStationName, currentStationID);
       let timeToCurrentStation = prevStation.timeToNextStation;
       let prevLocation = prevStation.location;
       let currentLocation = allStations[stationName].location;
@@ -277,48 +373,50 @@ class LiveTrain extends Component {
 
       let distance;
 
-      distance = geolib.getDistance(
-        allStations[stationName].location,
-        currentDestination.location
-      );
+      let stationLocation = allStations[stationName].location;
 
-      console.log(distance, station.name);
+      //   distance = geolib.getDistance(
+      //     allStations[stationName].location,
+      //     currentDestination.location
+      //   );
 
-      let nearestPoint = geolib.findNearest(
-        allStations[stationName].location,
-        waypoints.waypoints
-      );
-      let nearestPoint3;
+      //   console.log(distance, station.name);
 
-      nearestPoint3 = geolib.findNearest(
-        currentDestination.location,
-        waypoints.waypoints
-      );
+      //   let nearestPoint = geolib.findNearest(
+      //     allStations[stationName].location,
+      //     waypoints.waypoints
+      //   );
+      //   let nearestPoint3;
 
-      let stationIdx = indexOf(waypoints.waypoints, nearestPoint);
-      // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
-      let stationIdx3 = indexOf(waypoints.waypoints, nearestPoint3);
+      //   nearestPoint3 = geolib.findNearest(
+      //     currentDestination.location,
+      //     waypoints.waypoints
+      //   );
 
-      let waypointsSlice = waypoints.waypoints.slice(
-        stationIdx,
-        stationIdx3 + 1
-      );
+      //   let stationIdx = indexOf(waypoints.waypoints, nearestPoint);
+      //   // let stationIdx2 = indexOf(waypoints2.waypoints, nearestPoint2);
+      //   let stationIdx3 = indexOf(waypoints.waypoints, nearestPoint3);
 
-      console.log(waypointsSlice);
-      let metersBetweenWayPoints;
+      //   let waypointsSlice = waypoints.waypoints.slice(
+      //     stationIdx,
+      //     stationIdx3 + 1
+      //   );
 
-      metersBetweenWayPoints = Math.round(distance / waypointsSlice.length);
+      //   console.log(waypointsSlice);
+      //   let metersBetweenWayPoints;
 
-      console.log(metersBetweenWayPoints);
+      //   metersBetweenWayPoints = Math.round(distance / waypointsSlice.length);
 
-      let ms2;
+      //   console.log(metersBetweenWayPoints);
 
-      let wpm = Math.round((timeToDestination * 60) / waypointsSlice.length);
-      ms2 = toTime.fromSeconds(wpm).ms();
+      //   let ms2;
 
-      console.log(ms2);
+      //   let wpm = Math.round((timeToDestination * 60) / waypointsSlice.length);
+      //   ms2 = toTime.fromSeconds(wpm).ms();
 
-      let ms3 = ms2 || 4000;
+      //   console.log(ms2);
+
+      //   let ms3 = ms2 || 4000;
       // let train = {
       //   markers: waypointsSlice,
       //   color: route.hexcolor,
@@ -326,26 +424,37 @@ class LiveTrain extends Component {
       //   station: station
       // };
       // console.log(train);
+      let ms3 = 20000;
 
       return (
         <TrainContainer
-          markers={waypointsSlice}
+          markers={[stationLocation, stationLocation]}
           color={hexcolor}
           interval={ms3}
         />
       );
     }
-    if (
-      Number(currentDeparture) < Number(timetoCurrentStation) ||
-      currentDeparture - prevStationDepartures[departureID] < 0
-    ) {
-      console.log("between two points");
-      console.log(stationName, timetoCurrentStation, currentDeparture);
-      let prevStationDeparture = prevStationDepartures[departureID];
-      let prevStationETA = prevStationDeparture.minutes;
-      console.log(prevStationDeparture, stationName);
-      console.log(prevStationETA, stationName);
-      if (prevStationETA !== "Leaving") {
+
+    if (departureID === 0) {
+      let diff =
+        Number(currentDeparture) -
+        Number(prevStationDepartures[departureID].minutes) -
+        Number(timetoCurrentStation);
+
+      let diff2 =
+        Number(currentDeparture) -
+        Number(prevStationDepartures[departureID].minutes);
+
+      console.log(diff, diff2, stationName, prevStationName);
+
+      if (diff2 <= 0) {
+        console.log("between two points");
+        console.log(stationName, timetoCurrentStation, currentDeparture);
+        let prevStationDeparture = prevStationDepartures[departureID];
+        let prevStationETA = prevStationDeparture.minutes;
+        console.log(prevStationDeparture, stationName);
+        console.log(prevStationETA, stationName);
+        //   if (prevStationETA !== "Leaving") {
         let nearestPoint = geolib.findNearest(
           allStations[stationName].location,
           waypoints.waypoints
@@ -420,93 +529,95 @@ class LiveTrain extends Component {
           <TrainContainer markers={slice3} color={hexcolor} interval={ms3} />
         );
       }
+
+      // }}
     }
-    if (Number(currentDeparture) === Number(timetoCurrentStation)) {
-      console.log(stationName, prevStationDepartures);
-      let prevStationDeparture = prevStationDepartures[departureID];
-      let prevStationETA = prevStationDeparture.minutes;
-      console.log(prevStationDeparture, stationName);
-      console.log(prevStationETA, stationName);
-      if (prevStationETA === "Leaving") {
-        return;
-      }
-      if (Number(prevStationETA) > Number(currentDeparture)) {
-        console.log(currentDeparture, prevStationETA, stationName);
-        let nearestPoint = geolib.findNearest(
-          prevStation.location,
-          waypoints.waypoints
-        );
-        //   let nearestPoint2 = geolib.findNearest(
-        //     nextStation.location,
-        //     waypoints.waypoints
-        //   );
+    // if (Number(currentDeparture) === Number(timetoCurrentStation)) {
+    //   console.log(stationName, prevStationDepartures);
+    //   let prevStationDeparture = prevStationDepartures[departureID];
+    //   let prevStationETA = prevStationDeparture.minutes;
+    //   console.log(prevStationDeparture, stationName);
+    //   console.log(prevStationETA, stationName);
+    //   if (prevStationETA === "Leaving") {
+    //     return;
+    //   }
+    //   if (Number(prevStationETA) > Number(currentDeparture)) {
+    //     console.log(currentDeparture, prevStationETA, stationName);
+    //     let nearestPoint = geolib.findNearest(
+    //       prevStation.location,
+    //       waypoints.waypoints
+    //     );
+    //     //   let nearestPoint2 = geolib.findNearest(
+    //     //     nextStation.location,
+    //     //     waypoints.waypoints
+    //     //   );
 
-        let nearestPoint3;
-        // let nearestPoint2 = geolib.findNearest(
-        //   nextStation.location,
-        //   waypoints2.waypoints
-        // );
+    //     let nearestPoint3;
+    //     // let nearestPoint2 = geolib.findNearest(
+    //     //   nextStation.location,
+    //     //   waypoints2.waypoints
+    //     // );
 
-        nearestPoint3 = geolib.findNearest(
-          currentDestination.location,
-          waypoints.waypoints
-        );
+    //     nearestPoint3 = geolib.findNearest(
+    //       currentDestination.location,
+    //       waypoints.waypoints
+    //     );
 
-        //   console.log(nearestPoint);
-        //   console.log(nearestPoint2);
-        let stationIdx = indexOf(waypoints["waypoints"], nearestPoint);
-        //   let stationIdx2 = indexOf(waypoints["waypoints"], nearestPoint2);
-        let stationIdx3 = indexOf(waypoints["waypoints"], nearestPoint3);
+    //     //   console.log(nearestPoint);
+    //     //   console.log(nearestPoint2);
+    //     let stationIdx = indexOf(waypoints["waypoints"], nearestPoint);
+    //     //   let stationIdx2 = indexOf(waypoints["waypoints"], nearestPoint2);
+    //     let stationIdx3 = indexOf(waypoints["waypoints"], nearestPoint3);
 
-        console.log(stationIdx);
-        console.log(stationIdx3);
+    //     console.log(stationIdx);
+    //     console.log(stationIdx3);
 
-        let waypointsSlice2 = waypoints.waypoints.slice(
-          stationIdx,
-          stationIdx3
-        );
+    //     let waypointsSlice2 = waypoints.waypoints.slice(
+    //       stationIdx,
+    //       stationIdx3
+    //     );
 
-        console.log(waypointsSlice2);
-        // let distance2 = geolib.getDistance(
-        //   waypointsSlice2[0],
-        //   waypointsSlice2[waypointsSlice2.length - 1]
-        // );
-        let distanceToCover = geolib.getPathLength(waypointsSlice2);
-        console.log(distanceToCover, station.name);
+    //     console.log(waypointsSlice2);
+    //     // let distance2 = geolib.getDistance(
+    //     //   waypointsSlice2[0],
+    //     //   waypointsSlice2[waypointsSlice2.length - 1]
+    //     // );
+    //     let distanceToCover = geolib.getPathLength(waypointsSlice2);
+    //     console.log(distanceToCover, station.name);
 
-        //   let distanceCovered = nextStationTimetoArrive / timeToNextStation;
+    //     //   let distanceCovered = nextStationTimetoArrive / timeToNextStation;
 
-        let distanceCovered =
-          1 - waypointsSlice2.length / waypoints.waypoints.length;
+    //     let distanceCovered =
+    //       1 - waypointsSlice2.length / waypoints.waypoints.length;
 
-        let abc = Math.round(waypoints.waypoints.length * distanceCovered);
-        let slice3 = waypoints.waypoints.slice(abc, stationIdx3);
+    //     let abc = Math.round(waypoints.waypoints.length * distanceCovered);
+    //     let slice3 = waypoints.waypoints.slice(abc, stationIdx3);
 
-        let newDistance = geolib.getPathLength(slice3);
+    //     let newDistance = geolib.getPathLength(slice3);
 
-        console.log(newDistance, distanceToCover);
+    //     console.log(newDistance, distanceToCover);
 
-        let metersBetweenWayPoints;
+    //     let metersBetweenWayPoints;
 
-        metersBetweenWayPoints = Math.round(newDistance / slice3.length);
-        console.log(metersBetweenWayPoints);
-        // console.log(waypointsSlice);
-        // console.log(route);
+    //     metersBetweenWayPoints = Math.round(newDistance / slice3.length);
+    //     console.log(metersBetweenWayPoints);
+    //     // console.log(waypointsSlice);
+    //     // console.log(route);
 
-        let ms2;
-        if (timeToDestination) {
-          let wpm = Math.round((timeToDestination * 60) / slice3.length);
-          ms2 = toTime.fromSeconds(wpm).ms();
-        }
-        console.log(ms2);
+    //     let ms2;
+    //     if (timeToDestination) {
+    //       let wpm = Math.round((timeToDestination * 60) / slice3.length);
+    //       ms2 = toTime.fromSeconds(wpm).ms();
+    //     }
+    //     console.log(ms2);
 
-        let ms3 = ms2 || 2000;
+    //     let ms3 = ms2 || 2000;
 
-        return (
-          <TrainContainer markers={slice3} color={hexcolor} interval={ms3} />
-        );
-      }
-    }
+    //     return (
+    //       <TrainContainer markers={slice3} color={hexcolor} interval={ms3} />
+    //     );
+    //   }
+    // }
   }
 
   render() {

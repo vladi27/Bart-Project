@@ -48,11 +48,14 @@ class LiveTrains extends Component {
     //   });
     // });
 
+    if (this.props.routeNumber === "1") {
+      allDepartures = allDepartures.slice(2);
+    }
     if (this.props.routeNumber === "2") {
       allDepartures = allDepartures.slice(0, -2);
     }
-    if (this.props.routeNumber === "1") {
-      allDepartures = allDepartures.slice(2);
+    if (this.props.routeNumber === "4") {
+      allDepartures = allDepartures.slice(0, -1);
     }
 
     const alld3 = [];
@@ -136,6 +139,8 @@ class LiveTrains extends Component {
             return (
               <LiveTrain
                 departure={departure.minutes}
+                delay={departure.delay}
+                platform={departure.platform}
                 station={station}
                 stationId={idx2}
                 departureID={idx3}
