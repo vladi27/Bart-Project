@@ -171,19 +171,19 @@ class MainPage extends PureComponent {
     // const options = this.props.allRoutes.map(ele => ele.title);
 
     const position = [37.844443, -122.252341];
-    console.log(jsonObject);
+    // console.log(jsonObject);
 
     const allStations = this.props.stations;
-    console.log(this.props.routes);
+    // console.log(this.props.routes);
 
-    console.log(allStations);
-    console.log(this.state);
+    // console.log(allStations);
+    // console.log(this.state);
 
     // const waypoints = jsonObject;
 
     // console.log(waypoints);
 
-    console.log(this.props);
+    // console.log(this.props);
     // const customMarker = L.icon({ iconUrl: require('../../assets/images/iss.png')})
 
     if (this.props.stations.length === 0) {

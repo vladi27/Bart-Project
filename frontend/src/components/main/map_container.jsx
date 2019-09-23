@@ -37,8 +37,8 @@ class MapPage extends Component {
   render() {
     let allStations = this.props.allStations;
     let routes = this.props.routes;
-    console.log(this.props);
-    console.log(this.state);
+    // console.log(this.props);
+    // console.log(this.state);
 
     // let abcd = this.props.currentRoutes.map(ele => {
     //   let route = routes[ele.value];
@@ -56,11 +56,11 @@ class MapPage extends Component {
 
     this.props.currentRoutes.forEach(ele => {
       let routeNum = Number(ele.value);
-      console.log(routeNum);
+      // console.log(routeNum);
       way2["waypoints"] = this.state.waypoints[routeNum - 1].waypoints;
     });
 
-    console.log(way2);
+    // console.log(way2);
 
     // const allPositions = el2.map(station => {
     //   let station2Lat = parseFloat(station.gtfs_latitude);
@@ -79,6 +79,7 @@ class MapPage extends Component {
         {this.props.currentRoutes.map(ele => {
           let route = routes[ele.value];
           let schedule = this.props.schedules[route.number];
+          // console.log(schedule);
 
           // let station2Lat = parseFloat(station.gtfs_latitude);
           // let station2Long = parseFloat(station.gtfs_longitude);
