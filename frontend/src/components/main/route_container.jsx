@@ -2,11 +2,13 @@
 
 import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
 import React, { Component, PureComponent } from "react";
-import { connect } from "react-redux";
+
 import Station from "./stations";
 import * as geolib from "geolib";
 import merge from "lodash/merge";
 import indexOf from "lodash/indexOf";
+import { connect } from "react-redux";
+
 import findIndex from "lodash/findIndex";
 import TrainContainer from "./train_container";
 import date from "date-and-time";
@@ -87,38 +89,56 @@ const routes = {
   }
 };
 
-class Route extends Component {
+class Route extends PureComponent {
   constructor(props) {
     super(props);
     // console.log(this.props);
-    this.state = { waypoints: [] };
+    this.state = {
+      waypoints: [],
+      route: this.props.route,
+      etas: []
+      //   allStations: this.props.allStations
+    };
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
   }
 
   componentDidMount() {
     const waypoints4 = this.props.waypoints;
+    const etas = this.props.etas;
 
     this.setState(prev => ({
       waypoints: prev.waypoints.concat([waypoints4])
     }));
-    // this.setState({ route: this.props.route });
+    this.setState({ route: this.props.route, etas: etas });
   }
 
   renderStops() {
     const allStations = this.props.allStations;
     const schedule = this.props.schedule;
     const route = this.props.route;
-    return (
-      <div>
-        {route.stations.map(ele2 => {
-          let station = allStations[ele2];
-          return (
-            <Station station={station} key={`marker-${station.abbr}`}></Station>
-          );
-        })}
-      </div>
-    );
+    const routeNumber = route.number;
+
+    const hexcolor = routes[routeNumber].hexcolor;
+    console.log(hexcolor);
+    if (!route.stations) {
+      return <p>loading</p>;
+    } else {
+      return (
+        <div>
+          {route.stations.map(ele2 => {
+            let station = allStations[ele2];
+            return (
+              <Station
+                station={station}
+                hexcolor={hexcolor}
+                key={`${station.abbr}`}
+              ></Station>
+            );
+          })}
+        </div>
+      );
+    }
   }
 
   drawPolyline() {
@@ -131,10 +151,17 @@ class Route extends Component {
 
   renderTrains() {
     const allStations = this.props.allStations;
+
+    // if (!this.state.etas) {
+    //   return <div>loading</div>;
+    // }
+    const stationEtas = this.props.etas;
+    console.log(stationEtas);
+    console.log(allStations);
     const waypoints2 = this.props.waypoints;
     const schedule = this.props.schedule;
     const scheduleObj = this.props.schedule.obj;
-    const route = this.props.route;
+    const route = this.state.route;
     const routeNumber = route.number;
     const routeDestination = routes[routeNumber].abbreviation;
     const routeHexColor = routes[routeNumber].hexcolor;
@@ -150,11 +177,12 @@ class Route extends Component {
     let newRouteStationObj = {};
     const newRouteStations = routeStations.map(ele => {
       let station2 = allStations[ele];
-      newRouteStationObj[ele] = station2;
-      return station2;
+      let station3 = merge({}, station2);
+      newRouteStationObj[ele] = station3;
+      return station3;
     });
 
-    // console.log(newRouteStations);
+    console.log(newRouteStations);
 
     // let abc = newRouteStations.map(station => {
     //   let results = [];
@@ -175,7 +203,14 @@ class Route extends Component {
       return obj;
     });
 
-    // console.log(stationEtds);
+    console.log(stationEtds);
+
+    let newTrainsObj = {};
+    // stationEtds.forEach(ele => {
+    //   if (ele) {
+    //     newTrainsObj[ele.name] = ele;
+    //   }
+    // });
 
     let currentDestination;
 
@@ -223,15 +258,39 @@ class Route extends Component {
       return arr;
     });
 
-    // console.log(arr);
+    console.log(stationEtds);
 
-    let newTrainsObj = {};
+    let test = {};
 
-    arr.forEach(ele => {
+    const shdf = routeStations.map(name => {
+      let etas = stationEtas[name];
+      let results = [];
+
+      if (etas) {
+        etas.etd.map(ele => {
+          console.log(ele);
+
+          if (routeDestination.includes(String(ele.abbreviation))) {
+            if (test[name]) {
+              test[name] = test[name].concat(ele);
+            } else {
+              test[name] = [ele];
+            }
+          }
+        });
+      }
+    });
+
+    stationEtds.forEach(ele => {
       if (ele) {
         newTrainsObj[ele.name] = ele;
       }
     });
+
+    console.log(arr);
+    console.log(stationEtds);
+    console.log(newTrainsObj);
+    console.log(test);
 
     let newTrainsObj2 = {};
 
@@ -253,7 +312,7 @@ class Route extends Component {
 
     const newUpdatedRoutes = newRouteStations.map((ele, idx) => {
       let obj3 = {};
-      let stationWithDepartures = newTrainsObj[ele.abbr];
+      let stationWithDepartures = test[ele.abbr];
       //   console.log(stationWithDepartures);
       // let obj5 = obj3[[ele.abbr]];
 
@@ -261,11 +320,8 @@ class Route extends Component {
       //   console.log(obj3);
 
       //   console.log(arr);
-      if (
-        stationWithDepartures &&
-        stationWithDepartures["trains"] !== undefined
-      ) {
-        ele["trains"] = stationWithDepartures["trains"];
+      if (stationWithDepartures) {
+        ele["trains"] = stationWithDepartures;
       }
       let station2 = allStations[ele.abbr];
       let station2Lat = parseFloat(station2.gtfs_latitude);
@@ -372,12 +428,12 @@ class Route extends Component {
           let collect = {};
 
           let estimates = currentTrain.estimate;
-          console.log(estimates);
-          const abc = estimates.filter(ele => {
-            return (
-              ele.hexcolor === routeHexColor && ele.direction === routeDirection
-            );
-          });
+          //   console.log(estimates);
+          //   const abc = estimates.filter(ele => {
+          //     return (
+          //       ele.hexcolor === routeHexColor && ele.direction === routeDirection
+          //     );
+          //   });
           currentDestination3 = currentDestinationName;
           stationDepartures["destination"] = currentDestinationName;
           stationDepartures["departures"] = estimates;
@@ -408,6 +464,7 @@ class Route extends Component {
         });
       }
     });
+    console.log(trains);
     return (
       <LiveTrains
         trains={trains}
@@ -419,13 +476,13 @@ class Route extends Component {
         schedule={this.props.schedule}
         stationObj={stationsObj}
         waypoints={waypoints2}
+        fetchStationDepartures={this.props.fetchStationDepartures}
+        routeNumber={routeNumber}
       />
     );
   }
 
   render() {
-    const allStations = this.props.allStations;
-    const schedule = this.props.schedule;
     const route = this.props.route;
     // const routeNumber = route.number;
     // const routeDestination = routes[routeNumber].abbreviation;
@@ -566,4 +623,10 @@ class Route extends Component {
   }
 }
 
+// const msp = state => ({ etas: state.etas });
+
+// export default connect(
+//   msp,
+//   null
+// )(Route);
 export default Route;

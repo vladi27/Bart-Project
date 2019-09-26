@@ -1,13 +1,17 @@
 import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import LiveTrain from "./live_train";
+import useId from "react-id-generator";
 import merge from "lodash/merge";
+import uniqueId from "lodash/uniqueId";
 let flatten = require("array-flatten");
+const uuidv4 = require("uuid/v4");
 
-class LiveTrains extends Component {
+class LiveTrains extends PureComponent {
   constructor(props) {
     super(props);
     console.log(this.props);
+
     // this.state = {
     //  allTrains: []
     //   }
@@ -17,6 +21,10 @@ class LiveTrains extends Component {
     // };
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
+
+    this.state = {
+      allDepartures: []
+    };
   }
 
   //   componentDidMount() {
@@ -30,12 +38,18 @@ class LiveTrains extends Component {
   //     });
   //   }
 
+  componentDidMount() {
+    console.log("live trains");
+    this.setState({ allDepartures: this.props.trains });
+  }
+
   handleRoute() {
     let allDepartures = this.props.trains;
     const hexcolor = this.props.hexcolor;
     const direction = this.props.direction;
     const waypoints = this.props.waypoints;
     const routeStations = this.props.routeStations;
+    const routeNumber = this.props.routeNumber;
     console.log(allDepartures);
 
     const scheduleArray = this.props.schedule.arr;
@@ -47,6 +61,10 @@ class LiveTrains extends Component {
     //     }
     //   });
     // });
+
+    if (!allDepartures.length) {
+      return <p>Loading</p>;
+    }
 
     if (this.props.routeNumber === "1") {
       allDepartures = allDepartures.slice(2);
@@ -88,6 +106,7 @@ class LiveTrains extends Component {
       let k = 0;
       route = route.slice(k);
       console.log(route);
+      let currentDesstinationName = allDepartureskeys[idx];
       let totalRouteLength = scheduleArray[0].timeToDestination;
       return route.map((station, idx2) => {
         console.log(idx2);
@@ -113,6 +132,7 @@ class LiveTrains extends Component {
         let routeToFollow = route.slice(0, currentDestinationIdx + 1);
 
         console.log(previousStationName);
+
         // console.log(routeToFollow);
 
         // console.log(route);
@@ -126,10 +146,24 @@ class LiveTrains extends Component {
           scheduleArray[scheduleArray.length - 1].stationName;
         // console.log(providedDestination);
         let currentDepartures = station.departures;
-        console.log(currentDepartures, stationName);
+        // let id = currentDestination.abbr + hexcolor + stationName + direction;
+        console.log(currentDepartures, stationName, currentDesstinationName);
         let currentDeparturesCopy = station.departures.slice();
         let j = 0;
+        let idList = useId(routeLength, `${direction}`, [routeLength]);
+        console.log(idList);
         return currentDepartures.map((departure, idx3) => {
+          let id =
+            hexcolor +
+            stationName +
+            direction +
+            String(idx3) +
+            String(idx2) +
+            String(idx) +
+            String(routeNumber) +
+            departure.platform +
+            currentDesstinationName;
+
           if (departure.hexcolor === "#c463c5") {
             return;
           } else if (
@@ -147,11 +181,15 @@ class LiveTrains extends Component {
                 prevStationName={previousStationName}
                 allStations={stationObj}
                 firstStation={routeStations[0]}
+                direction={direction}
                 waypoints={this.props.waypoints}
-                currentDestination={currentDestination}
+                currentDestinationName={currentDesstinationName}
                 hexcolor={hexcolor}
                 prevStationDepartures={prevStationDepartures}
                 routeLength={routeLength}
+                key={id}
+                id={id}
+                fetchStationDepartures={this.props.fetchStationDepartures}
               />
             );
           }

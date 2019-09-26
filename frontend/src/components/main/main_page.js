@@ -11,7 +11,7 @@ import WindowedSelect from "react-windowed-select";
 import { components, createFilter } from "react-windowed-select";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
-class MainPage extends PureComponent {
+class MainPage extends Component {
   constructor(props) {
     super(props);
 
@@ -23,7 +23,7 @@ class MainPage extends PureComponent {
     //   // marker: this.circleMarker
     // };
 
-    this.state = { currentSelections: [] };
+    this.state = { currentSelections: [], etas: this.props.etas };
   }
 
   componentDidMount() {
@@ -42,15 +42,17 @@ class MainPage extends PureComponent {
       this.props.fetchRouteSchedules(ele);
     });
 
-    this.props.getCurrentEtas();
+    this.props
+      .getCurrentEtas()
+      .then(response => this.setState({ etas: this.props.etas }));
 
     // this.props.fetchRouteSchedules(1);
 
     this.props.receiveWayPoints(jsonObject);
 
-    // setInterval(() => {
-    //   this.props.getCurrentEtas();
-    // }, 60000);
+    this.interval = setInterval(() => {
+      this.props.getCurrentEtas();
+    }, 20000);
 
     //   .then(response => this.setState({ stations: response.stations }));
     // this.props
@@ -174,6 +176,9 @@ class MainPage extends PureComponent {
     // console.log(jsonObject);
 
     const allStations = this.props.stations;
+    const etas = this.props.etas;
+    console.log(this.state);
+    // console.count();
     // console.log(this.props.routes);
 
     // console.log(allStations);
@@ -228,6 +233,13 @@ class MainPage extends PureComponent {
                   // stations={allStations}
                   currentRoutes={this.state.currentSelections}
                   waypoints={this.props.waypoints}
+                  allStations={this.props.allStations}
+                  routes={this.props.routes}
+                  schedules={this.props.schedules}
+                  fetchStationDepartures={this.props.fetchStationDepartures}
+                  getCurrentEtas={this.props.getCurrentEtas}
+                  key={`${routeNum}`}
+                  etas={etas}
                 />
               );
             })

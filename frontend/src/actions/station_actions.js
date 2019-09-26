@@ -6,7 +6,8 @@ import {
   getRoutes,
   getSchedules,
   getRouteStations,
-  fetchCurrentEtas
+  fetchCurrentEtas,
+  getStationDepartures
 
   // getRouteInfo
 } from "../util/station_api_util";
@@ -20,6 +21,7 @@ export const RECEIVE_ROUTES = "RECEIVE_ROUTES";
 export const RECEIVE_ROUTE_STATIONS = "RECEIVE_ROUTE_STATIONS";
 export const RECEIVE_CURRENT_ETAS = "RECEIVE_CURRENT_ETAS";
 export const RECEIVE_ROUTE_SCHEDULES = "RECEIVE_ROUTE_SCHEDULES";
+export const RECEIVE_STATION_ETA = "RECEIVE_STATION_ETA";
 
 const stationsSouthBound = [
   "ANTC",
@@ -175,6 +177,14 @@ export const receiveCurrentEtas = etas => {
     etas: etas.data.root.station
   };
 };
+export const receiveStationEta = (eta, abbr) => {
+  return {
+    type: RECEIVE_STATION_ETA,
+    eta: eta.data.root.station,
+    abbr
+  };
+};
+
 export const receiveRouteInfo = info => ({
   type: RECEIVE_ROUTE_INFO,
   info
@@ -208,6 +218,11 @@ export const receiveWayPoints = jsonObj => ({
 export const getCurrentEtas = () => dispatch =>
   fetchCurrentEtas()
     .then(etas => dispatch(receiveCurrentEtas(etas)))
+    .catch(err => console.log(err));
+
+export const fetchStationDepartures = abbr => dispatch =>
+  getStationDepartures(abbr)
+    .then(eta => dispatch(receiveStationEta(eta, abbr)))
     .catch(err => console.log(err));
 
 export const fetchRouteStations = id => dispatch =>

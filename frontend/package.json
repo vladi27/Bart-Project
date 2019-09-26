@@ -18,6 +18,7 @@
     "moment": "^2.24.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "react-id-generator": "^2.0.0",
     "react-leaflet": "^2.4.0",
     "react-redux": "^6.0.1",
     "react-router-dom": "^4.3.1",
@@ -30,7 +31,8 @@
     "redux-thunk": "^2.3.0",
     "styled-components": "^4.3.2",
     "styled-icons": "^8.4.2",
-    "to-time": "^1.0.2"
+    "to-time": "^1.0.2",
+    "uuid": "^3.3.3"
   },
   "scripts": {
     "start": "react-scripts start",

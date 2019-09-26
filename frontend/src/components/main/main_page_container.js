@@ -8,7 +8,8 @@ import {
   fetchRoutes,
   getCurrentEtas,
   fetchRouteStations,
-  fetchRouteSchedules
+  fetchRouteSchedules,
+  fetchStationDepartures
 } from "../../actions/station_actions";
 import { fetchSpaceStation } from "../../actions/space_station_actions";
 import MainPage from "./main_page";
@@ -16,12 +17,16 @@ import MainPage from "./main_page";
 const mapStateToProps = state => {
   return {
     stations: Object.values(state.stations),
-    space_station: state.space_station,
+
     nextStation: state.nextStation,
     route_info: state.route_info,
-    routes: Object.values(state.routes).sort((a, b) => (a.id > b.id ? 1 : -1)),
+
     allRoutes: state.routes,
-    waypoints: state.waypoints
+    waypoints: state.waypoints,
+    schedules: state.schedules,
+    allStations: state.stations,
+    routes: state.routes,
+    etas: state.etas
   };
 };
 
@@ -30,6 +35,7 @@ const mapDispatchToProps = dispatch => {
     fetchStations: () => dispatch(fetchStations()),
     fetchRoutes: () => dispatch(fetchRoutes()),
     getCurrentEtas: () => dispatch(getCurrentEtas()),
+    fetchStationDepartures: abbr => dispatch(fetchStationDepartures(abbr)),
     fetchRouteStations: id => dispatch(fetchRouteStations(id)),
     fetchRouteSchedules: id => dispatch(fetchRouteSchedules(id)),
     fetchRouteInfo: () => dispatch(fetchRouteInfo()),

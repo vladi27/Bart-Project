@@ -1,6 +1,7 @@
 import {
   RECEIVE_STATIONS,
-  RECEIVE_CURRENT_ETAS
+  RECEIVE_CURRENT_ETAS,
+  RECEIVE_STATION_ETA
 } from "../actions/station_actions";
 import merge from "lodash/merge";
 
@@ -25,6 +26,13 @@ const StationsReducer = (state = {}, action) => {
         let updatedStation = { [station.abbr]: station };
         return merge({}, state, updatedStation);
       });
+      return merge({}, state);
+
+    case RECEIVE_STATION_ETA:
+      const currentStation = state[action.abbr];
+      currentStation["etd"] = action.eta;
+      const newStation = { [action.abbr]: currentStation };
+      return merge({}, state, newStation);
 
     // return merge({}, state, action.etas);
     default:

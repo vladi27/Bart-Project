@@ -52,6 +52,11 @@ export const getSchedules = id => {
     `http://api.bart.gov/api/sched.aspx?cmd=routesched&route=${id}&key=MW9S-E7SL-26DU-VV8V&date=now&json=y`
   );
 };
+export const getStationDepartures = abbr => {
+  return axios.get(
+    `https://api.bart.gov/api/etd.aspx?cmd=etd&orig=${abbr}&key=MW9S-E7SL-26DU-VV8V&json=y`
+  );
+};
 
 export const getRouteStations = id => {
   return axios.get(

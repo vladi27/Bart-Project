@@ -1,14 +1,34 @@
 import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 
-class Station extends Component {
+class Station extends PureComponent {
   constructor(props) {
     super(props);
+    console.log(this.props);
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
+    this.state = { routes: [] };
   }
 
+  componentDidMount() {
+    const station = this.props.station;
+    const name = station.abbr;
+    // const hexcolor = this.props.hexcolor;
+    // this.setState(prev => {
+    //   if (prev.routes.indexOf(hexcolor) > -1) {
+    //     return;
+    //   } else {
+    //     return { routes: prev.routes.concat([hexcolor]) };
+    //   }
+    // });
+  }
+
+  // componentWillUnmount() {
+  //   clearInterval(this.interval);
+  // }
+
   render() {
+    console.log(this.state);
     const station = this.props.station;
 
     let station2Lat = parseFloat(station.gtfs_latitude);

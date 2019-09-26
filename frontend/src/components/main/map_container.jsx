@@ -6,12 +6,16 @@ import { connect } from "react-redux";
 import { runInThisContext } from "vm";
 import Station from "./stations";
 import RouteContainer from "./route_container";
+import AllStations from "./all_stations";
 
 class MapPage extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { waypoints: this.props.waypoints || [] };
+    this.state = {
+      waypoints: this.props.waypoints || [],
+      routes: this.props.routes
+    };
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
   }
@@ -29,6 +33,13 @@ class MapPage extends Component {
   //       1000
   //     );
   //   }
+
+  componentDidMount() {
+    console.log("intermi");
+    this.setState({ allStations: this.props.allStations });
+    console.log("map");
+    console.count();
+  }
 
   //   shouldComponentUpdate(nextProps, nextState) {
   //     this.setState({ station: nextProps.selectedRoute.stations });
@@ -75,8 +86,12 @@ class MapPage extends Component {
 
     return (
       <Map center={position} zoom={11}>
+        {/* <AllStations
+          allStations={allStations}
+          fetchStationDepartures={this.props.fetchStationDepartures}
+        ></AllStations> */}
         <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
-        {this.props.currentRoutes.map(ele => {
+        {this.props.currentRoutes.map((ele, idx) => {
           let route = routes[ele.value];
           let schedule = this.props.schedules[route.number];
           // console.log(schedule);
@@ -88,14 +103,15 @@ class MapPage extends Component {
           //   this.setState({positions: arr });
 
           return (
-            // <Station station={station} key={`marker-${station.abbr}`}></Station>
-
             <RouteContainer
               route={route}
-              allStations={this.props.allStations}
+              allStations={allStations}
               waypoints={way2}
               schedule={schedule}
               getCurrentEtas={this.props.getCurrentEtas}
+              key={String(route.number)}
+              etas={this.props.etas}
+              fetchStationDepartures={this.props.fetchStationDepartures}
             ></RouteContainer>
           );
         })}
@@ -108,18 +124,7 @@ class MapPage extends Component {
   }
 }
 
-const msp = state => {
-  return {
-    allStations: state.stations,
-    routes: state.routes,
-    schedules: state.schedules
-  };
-};
-
-export default connect(
-  msp,
-  null
-)(MapPage);
+export default MapPage;
 
 {
   /* <CircleMarker
