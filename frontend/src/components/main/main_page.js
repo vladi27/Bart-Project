@@ -8,6 +8,7 @@ import jsonObject from "../../waypoints/all_shapes";
 import MapContainer from "./map_container";
 import { throws } from "assert";
 import WindowedSelect from "react-windowed-select";
+import RouteContainer from "./route_container";
 import { components, createFilter } from "react-windowed-select";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
@@ -23,10 +24,11 @@ class MainPage extends Component {
     //   // marker: this.circleMarker
     // };
 
-    this.state = { currentSelections: [], etas: this.props.etas };
+    this.state = { currentSelections: [], etas: [] };
   }
 
   componentDidMount() {
+    const routeIds = [1, 2, 3, 4, 5, 6, 7, 8];
     // this.props.receiveWayPoints(jsonObject);
     // this.props.fetchSpaceStation();
     // then(response =>
@@ -34,25 +36,38 @@ class MainPage extends Component {
     // );
     this.props
       .fetchRoutes()
-      .then(response => this.setState({ routes: this.props.routes }));
-    this.props.fetchStations();
+      .then(response => this.props.fetchStations())
+      .then(() => {
+        routeIds.map(ele => {
+          this.props.fetchRouteStations(ele);
+        });
+      });
 
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 19, 20].map(ele => {
-      this.props.fetchRouteStations(ele);
-      this.props.fetchRouteSchedules(ele);
-    });
+    console.count();
 
-    this.props
-      .getCurrentEtas()
-      .then(response => this.setState({ etas: this.props.etas }));
+    // this.props
+    //   .getCurrentEtas()
+    //   .then(response => this.setState({ etas: this.props.etas }));
 
     // this.props.fetchRouteSchedules(1);
 
     this.props.receiveWayPoints(jsonObject);
+    setTimeout(() => {
+      this.props.getCurrentEtas().then(() => {
+        routeIds.map(id => {
+          this.props.createTrains(id);
+        });
+      });
+    }, 3000);
 
+    // this.interval = setInterval(() => {
+    //   this.props.getCurrentEtas().then(() => {
+    //     this.props.updateTrains(2);
+    //   });
+    // }, 60000);
     this.interval = setInterval(() => {
       this.props.getCurrentEtas();
-    }, 20000);
+    }, 25000);
 
     //   .then(response => this.setState({ stations: response.stations }));
     // this.props
@@ -67,9 +82,9 @@ class MainPage extends Component {
   //   // this.props.receiveWayPoints(jsonObject);
   // }
 
-  // componentWillUnmount() {
-  //   clearInterval(this.interval);
-  // }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
 
   //   updateValue(value) {
   //   this.setState({ value: value });
@@ -175,8 +190,6 @@ class MainPage extends Component {
     const position = [37.844443, -122.252341];
     // console.log(jsonObject);
 
-    const allStations = this.props.stations;
-    const etas = this.props.etas;
     console.log(this.state);
     // console.count();
     // console.log(this.props.routes);
@@ -191,25 +204,22 @@ class MainPage extends Component {
     // console.log(this.props);
     // const customMarker = L.icon({ iconUrl: require('../../assets/images/iss.png')})
 
-    if (this.props.stations.length === 0) {
-      return <div>Loading...</div>;
-    } else {
-      return (
-        <div>
-          <div className="react-select__menu">
-            <WindowedSelect
-              options={options}
-              isMulti
-              values={this.state.currentSelections}
-              styles={{ marginBottom: "200px" }}
-              placeholder={"hello"}
-              className="basic-multi-select"
-              classNamePrefix="select"
-              filterOption={customFilter}
-              onChange={this.handleChange.bind(this)}
-            />
-          </div>
-          {/* <div className="test">
+    return (
+      <div>
+        <div className="react-select__menu">
+          <WindowedSelect
+            options={options}
+            isMulti
+            values={this.state.currentSelections}
+            styles={{ marginBottom: "200px" }}
+            placeholder={"hello"}
+            className="basic-multi-select"
+            classNamePrefix="select"
+            filterOption={customFilter}
+            onChange={this.handleChange.bind(this)}
+          />
+        </div>
+        {/* <div className="test">
             <DropdownMultiple
               titleHelper="Routes"
               title="Select routes"
@@ -219,37 +229,47 @@ class MainPage extends Component {
               // toggleItem={this.handleChange}
             />
           </div> */}
-
+        <Map center={position} zoom={11}>
           {currentSelections ? (
-            this.state.currentSelections.map(ele => {
-              let routeNum = ele.value;
-              let route = this.props.allRoutes[routeNum];
-              let routeStations = route.stations;
+            this.state.currentSelections.map((ele, idx) => {
+              let routeNumber = ele.value;
+              let key = "routeID -" + routeNumber;
 
-              // return selectedRoute;
-
+              // let routeID = route.routeID;
+              // let schedule = this.props.schedules[route.number];
               return (
-                <MapContainer
-                  // stations={allStations}
-                  currentRoutes={this.state.currentSelections}
-                  waypoints={this.props.waypoints}
-                  allStations={this.props.allStations}
-                  routes={this.props.routes}
-                  schedules={this.props.schedules}
-                  fetchStationDepartures={this.props.fetchStationDepartures}
-                  getCurrentEtas={this.props.getCurrentEtas}
-                  key={`${routeNum}`}
-                  etas={etas}
+                <RouteContainer
+                  // route={route}
+
+                  // waypoints={way2}
+                  routeNumber={routeNumber}
+                  key={key}
                 />
               );
             })
           ) : (
-            <h2>Hello</h2>
+            <div></div>
           )}
-        </div>
-      );
-    }
+          <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
+          />
+        </Map>
+        ; })
+      </div>
+    );
   }
 }
 
 export default MainPage;
+
+{
+  /* <MapContainer
+          // stations={allStations}
+          currentRoutes={this.state.currentSelections}
+          waypoints={this.props.waypoints}
+          allStations={this.props.allStations}
+          routes={this.props.routes}
+          schedules={this.props.schedules}
+          fetchStationDepartures={this.props.fetchStationDepartures}
+          getCurrentEtas={this.props.getCurrentEtas}
+          etas={etas} */
+}

@@ -18,15 +18,11 @@ import route_info from "./route_info_reducer";
 const RootReducer = combineReducers({
   errors,
   session,
-  tweets,
+
   stations,
   routes,
   schedules,
-  destinationEtas,
-  next_station_sb,
-  prev_station_sb,
-  next_station_nb,
-  prev_station_nb,
+
   route_info,
   waypoints,
   etas

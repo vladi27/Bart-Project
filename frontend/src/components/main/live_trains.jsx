@@ -190,6 +190,7 @@ class LiveTrains extends PureComponent {
                 key={id}
                 id={id}
                 fetchStationDepartures={this.props.fetchStationDepartures}
+                addTrains={this.props.addTrains}
               />
             );
           }

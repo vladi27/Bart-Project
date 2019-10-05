@@ -40,6 +40,8 @@ const LiveTrain = props => {
   const routeLength = props.routeLength;
   const delay = Number(props.delay);
   const direction = props.direction;
+  const addTrains = props.addTrains;
+  console.log(addTrains);
 
   const currentDestinationName = props.currentDestinationName;
   const currentDestination = allStations[currentDestinationName];
@@ -561,16 +563,21 @@ const LiveTrain = props => {
 
       let ms3 = ms2 || 2000;
 
+      let origin = stationIdx;
+
       return (
-        <TrainContainer
-          markers={slice3}
-          color={hexcolor}
-          fetchStationDepartures={props.fetchStationDepartures}
-          interval={5000}
-          nextStation={nextStation}
-          key={id}
-          id={id}
-        />
+        <div>
+          {addTrains(origin)}
+          <TrainContainer
+            markers={slice3}
+            color={hexcolor}
+            fetchStationDepartures={props.fetchStationDepartures}
+            interval={5000}
+            nextStation={nextStation}
+            key={id}
+            id={id}
+          />
+        </div>
       );
     }
 

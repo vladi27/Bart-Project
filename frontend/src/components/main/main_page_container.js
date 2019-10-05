@@ -9,25 +9,15 @@ import {
   getCurrentEtas,
   fetchRouteStations,
   fetchRouteSchedules,
-  fetchStationDepartures
+  fetchStationDepartures,
+  createTrains,
+  updateTrains
 } from "../../actions/station_actions";
 import { fetchSpaceStation } from "../../actions/space_station_actions";
 import MainPage from "./main_page";
 
 const mapStateToProps = state => {
-  return {
-    stations: Object.values(state.stations),
-
-    nextStation: state.nextStation,
-    route_info: state.route_info,
-
-    allRoutes: state.routes,
-    waypoints: state.waypoints,
-    schedules: state.schedules,
-    allStations: state.stations,
-    routes: state.routes,
-    etas: state.etas
-  };
+  return {};
 };
 
 const mapDispatchToProps = dispatch => {
@@ -41,6 +31,8 @@ const mapDispatchToProps = dispatch => {
     fetchRouteInfo: () => dispatch(fetchRouteInfo()),
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
     fetchSpaceStation: () => dispatch(fetchSpaceStation()),
+    createTrains: route => dispatch(createTrains(route)),
+    updateTrains: route => dispatch(updateTrains(route)),
     fetchInitialStationDataSouth: () =>
       dispatch(fetchInitialStationDataSouth()),
     fetchInitialStationDataNorth: () => dispatch(fetchInitialStationDataNorth())
@@ -48,6 +40,6 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default connect(
-  mapStateToProps,
+  null,
   mapDispatchToProps
 )(MainPage);

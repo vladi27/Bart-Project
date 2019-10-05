@@ -17,16 +17,16 @@ const StationsReducer = (state = {}, action) => {
 
       return merge({}, state, newObj);
 
-    case RECEIVE_CURRENT_ETAS:
-      const allEtas = action.etas;
+    // case RECEIVE_CURRENT_ETAS:
+    //   const allEtas = action.etas;
 
-      allEtas.map(ele => {
-        let station = state[ele.abbr];
-        station["etd"] = ele.etd;
-        let updatedStation = { [station.abbr]: station };
-        return merge({}, state, updatedStation);
-      });
-      return merge({}, state);
+    //   allEtas.map(ele => {
+    //     let station = state[ele.abbr];
+    //     station["etd"] = ele.etd;
+    //     let updatedStation = { [station.abbr]: station };
+    //     return merge({}, state, updatedStation);
+    //   });
+    //   return merge({}, state);
 
     case RECEIVE_STATION_ETA:
       const currentStation = state[action.abbr];

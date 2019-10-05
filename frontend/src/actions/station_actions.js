@@ -22,6 +22,8 @@ export const RECEIVE_ROUTE_STATIONS = "RECEIVE_ROUTE_STATIONS";
 export const RECEIVE_CURRENT_ETAS = "RECEIVE_CURRENT_ETAS";
 export const RECEIVE_ROUTE_SCHEDULES = "RECEIVE_ROUTE_SCHEDULES";
 export const RECEIVE_STATION_ETA = "RECEIVE_STATION_ETA";
+export const CREATE_TRAINS = "CREATE_TRAINS";
+export const UPDATE_TRAINS = "UPDATE_TRAINS";
 
 const stationsSouthBound = [
   "ANTC",
@@ -208,6 +210,15 @@ export const receiveRouteSchedules = (schedules, id) => ({
   type: RECEIVE_ROUTE_SCHEDULES,
   schedules: schedules.data.root.route,
   id
+});
+export const createTrains = route => ({
+  type: CREATE_TRAINS,
+  route
+});
+
+export const updateTrains = route => ({
+  type: UPDATE_TRAINS,
+  route
 });
 
 export const receiveWayPoints = jsonObj => ({

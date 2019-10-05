@@ -1,25 +1,25 @@
-/* global _ */
-
-import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
-import React, { Component, PureComponent } from "react";
-
-import Station from "./stations";
-import * as geolib from "geolib";
-import merge from "lodash/merge";
-import indexOf from "lodash/indexOf";
 import { connect } from "react-redux";
-
+import Route from "./route";
+import * as geolib from "geolib";
+import {
+  fetchStations,
+  fetchRouteInfo,
+  fetchInitialStationDataSouth,
+  fetchInitialStationDataNorth,
+  receiveWayPoints,
+  fetchRoutes,
+  getCurrentEtas,
+  fetchRouteStations,
+  fetchRouteSchedules,
+  fetchStationDepartures,
+  createTrains,
+  updateTrains
+} from "../../actions/station_actions";
+import indexOf from "lodash/indexOf";
 import findIndex from "lodash/findIndex";
-import TrainContainer from "./train_container";
-import date from "date-and-time";
-import LiveTrains from "./live_trains";
+const uuidv4 = require("uuid/v4");
 
-let _ = require("lodash.indexof");
-let toTime = require("to-time");
-
-let flatten = require("array-flatten");
-
-const routes = {
+const ROUTES = {
   1: {
     hexcolor: "#ffff33",
     destination: "Millbrae",
@@ -89,544 +89,353 @@ const routes = {
   }
 };
 
-class Route extends PureComponent {
-  constructor(props) {
-    super(props);
-    // console.log(this.props);
-    this.state = {
-      waypoints: [],
-      route: this.props.route,
-      etas: []
-      //   allStations: this.props.allStations
-    };
-
-    // this.state = { stations: this.props.selectedRoute.stations || [] };
-  }
-
-  componentDidMount() {
-    const waypoints4 = this.props.waypoints;
-    const etas = this.props.etas;
-
-    this.setState(prev => ({
-      waypoints: prev.waypoints.concat([waypoints4])
-    }));
-    this.setState({ route: this.props.route, etas: etas });
-  }
-
-  renderStops() {
-    const allStations = this.props.allStations;
-    const schedule = this.props.schedule;
-    const route = this.props.route;
-    const routeNumber = route.number;
-
-    const hexcolor = routes[routeNumber].hexcolor;
-    console.log(hexcolor);
-    if (!route.stations) {
-      return <p>loading</p>;
-    } else {
-      return (
-        <div>
-          {route.stations.map(ele2 => {
-            let station = allStations[ele2];
-            return (
-              <Station
-                station={station}
-                hexcolor={hexcolor}
-                key={`${station.abbr}`}
-              ></Station>
-            );
-          })}
-        </div>
-      );
-    }
-  }
-
-  drawPolyline() {
-    // console.log(this.state);
-    const waypoints3 = this.state.waypoints;
-    return waypoints3.map(ele => {
-      return <Polyline positions={ele.waypoints} />;
-    });
-  }
-
-  renderTrains() {
-    const allStations = this.props.allStations;
-
-    // if (!this.state.etas) {
-    //   return <div>loading</div>;
-    // }
-    const stationEtas = this.props.etas;
-    console.log(stationEtas);
-    console.log(allStations);
-    const waypoints2 = this.props.waypoints;
-    const schedule = this.props.schedule;
-    const scheduleObj = this.props.schedule.obj;
-    const route = this.state.route;
-    const routeNumber = route.number;
-    const routeDestination = routes[routeNumber].abbreviation;
-    const routeHexColor = routes[routeNumber].hexcolor;
-    const routeDirection = routes[routeNumber].direction;
-    // console.log(routeDestination);
-    const count = [];
-    const trains = [];
-    const departures = {};
-    let currentDestination3;
-    let stationsObj = {};
-
-    const routeStations = route.stations;
-    let newRouteStationObj = {};
-    const newRouteStations = routeStations.map(ele => {
-      let station2 = allStations[ele];
-      let station3 = merge({}, station2);
-      newRouteStationObj[ele] = station3;
-      return station3;
-    });
-
-    console.log(newRouteStations);
-
-    // let abc = newRouteStations.map(station => {
-    //   let results = [];
-    //   station["nextTrains"] = results;
-
-    //   return station.etd.forEach(destination => {
-    //     console.log(destination);
-    //     if (routeDestination.includes(destination.abbreviation)) {
-    //       return (station["next"] = destination);
-    //     }
-    //   });
-    // });
-
-    let stationEtds = newRouteStations.map(station => {
-      let obj = {};
-      obj["departures"] = station.etd;
-      obj["name"] = station.abbr;
-      return obj;
-    });
-
-    console.log(stationEtds);
-
-    let newTrainsObj = {};
-    // stationEtds.forEach(ele => {
-    //   if (ele) {
-    //     newTrainsObj[ele.name] = ele;
-    //   }
-    // });
-
-    let currentDestination;
-
-    const arr = [];
-    stationEtds.forEach(ele => {
-      //   console.log(ele);
-      //   let obj = {};
-
-      let allDepartures = ele.departures;
-      if (allDepartures) {
-        allDepartures.forEach(ele2 => {
-          //   console.log(ele2);
-
-          let dist = ele2.abbreviation;
-
-          //   console.log(dist);
-          //   console.log(routeDestination);
-          let anc = [];
-
-          //   console.log(routeDestination.includes(String(dist)));
-
-          if (routeDestination.includes(String(dist))) {
-            // console.log("hi");
-            anc.push(ele2);
-            let trains = ele.trains || [];
-            let newt = trains.concat(anc);
-            // console.log(newt);
-            // ele["currentDestination"] = dist;
-            ele["trains"] = newt;
-
-            let abcd = { [ele.name]: ele };
-            obj = merge({}, abcd, ele);
-          }
-        });
-      }
-      let newe = merge({}, { [ele.name]: ele, obj });
-
-      //   if (Object.values(obj).length === 0) {
-      //     arr.push({ [ele.name]: ele });
-      //   } else {
-      //     arr.push(obj);
-      //   }
-
-      arr.push(obj);
-      return arr;
-    });
-
-    console.log(stationEtds);
-
-    let test = {};
-
-    const shdf = routeStations.map(name => {
-      let etas = stationEtas[name];
-      let results = [];
-
-      if (etas) {
-        etas.etd.map(ele => {
-          console.log(ele);
-
-          if (routeDestination.includes(String(ele.abbreviation))) {
-            if (test[name]) {
-              test[name] = test[name].concat(ele);
-            } else {
-              test[name] = [ele];
-            }
-          }
-        });
-      }
-    });
-
-    stationEtds.forEach(ele => {
-      if (ele) {
-        newTrainsObj[ele.name] = ele;
-      }
-    });
-
-    console.log(arr);
-    console.log(stationEtds);
-    console.log(newTrainsObj);
-    console.log(test);
-
-    let newTrainsObj2 = {};
-
-    // arr.forEach(ele => {
-    //   console.log(ele);
-    //   if (ele.trains) {
-    //     ele.trains.forEach(ele2 => {
-    //       console.log(ele2);
-    //       ele2.estimate.map(ele3 => {
-    //         console.log(ele3);
-    //         newTrainsObj2[ele2.abbreviation] = ele3;
-    //         // return merge({}, { [newTrainsObj2[ele2.abbreviation]]: ele3 });
-    //       });
-    //     });
-    //   }
-    // });
-
-    // console.log(newTrainsObj2);
-
-    const newUpdatedRoutes = newRouteStations.map((ele, idx) => {
-      let obj3 = {};
-      let stationWithDepartures = test[ele.abbr];
-      //   console.log(stationWithDepartures);
-      // let obj5 = obj3[[ele.abbr]];
-
-      // let departures = arr[name];
-      //   console.log(obj3);
-
-      //   console.log(arr);
-      if (stationWithDepartures) {
-        ele["trains"] = stationWithDepartures;
-      }
-      let station2 = allStations[ele.abbr];
-      let station2Lat = parseFloat(station2.gtfs_latitude);
-      let station2Long = parseFloat(station2.gtfs_longitude);
-      let arr2 = [station2Lat, station2Long];
-      ele["location"] = arr2;
-      return ele;
-    });
-
-    // console.log(newUpdatedRoutes);
-    // console.log(schedule);
-
-    const routesWithSchedules = newUpdatedRoutes.map((ele, idx) => {
-      let scheduleData = scheduleObj[ele.abbr];
-
-      if (idx === 0) {
-        ele["timeToDestination"] = scheduleData.timeToDestination;
-        ele["timeToNextStation"] = scheduleData.timeToNextStation;
-        ele["nextStation"] = scheduleData.nextStationName;
-      } else if (idx === newUpdatedRoutes.length - 1) {
-        ele["previousStaion"] = scheduleData.previousStationName;
-      } else {
-        ele["timeToDestination"] = scheduleData.timeToDestination;
-        ele["timeToNextStation"] = scheduleData.timeToNextStation;
-        ele["nextStation"] = scheduleData.nextStationName;
-        ele["previousStation"] = scheduleData.previousStationName;
-      }
-
-      return ele;
-    });
-
-    // newRouteStations.forEach((ele, idx) => {
-    //   let scheduleData = schedule[idx];
-
-    //   if (scheduleData && scheduleData.timeToNextStation) {
-    //     ele["timeToNextStation"] = scheduleData.timeToNextStation;
-    //     ele["nextStation"] = scheduleData.nextStationName;
-    //   }
-    // });
-
-    let obj = {};
-
-    routesWithSchedules.forEach(ele => {
-      stationsObj[ele.abbr] = ele;
-    });
-
-    // console.log(newRouteStations);
-    // console.log(stationsObj);
-
-    console.log(routesWithSchedules);
-    routesWithSchedules.map((station, idx) => {
-      let timeToNextStation = station["timeToNextStation"];
-      let timeToDestination = station["timeToDestination"];
-      let nextStationName = station["nextStation"];
-      let previousStationName = station["previousStation"];
-      let stationDepartures = { departures: [] };
-
-      let nextStation = {};
-      //   console.log(station);
-
-      nextStation = obj[nextStationName];
-      let previousStationTimetoNext;
-      let previousStation;
-
-      //   if (previousStationName) {
-      //     previousStation = obj[previousStationName];
-      //     previousStationTimetoNext = previousStation["timeToNextStation"];
-      //   }
-
-      let closestTrains = [];
-      let closestTrain = {};
-      let results = [];
-      let destination;
-      let trainDepartures = {};
-      let firstStationWithTrains;
-
-      if (station.trains) {
-        //     console.log(idx);
-        //     if (idx === 0) {
-        //       firstStationWithTrains = 1;
-        //     } else {
-        //       firstStationWithTrains = idx;
-        //     }
-        // console.log(firstStationWithTrains);
-        // let currentRoute2 =
-        //   routesWithSchedules.slice(firstStationWithTrains, idx + 1) || [];
-        // console.log(currentRoute2);
-        // console.log(currentRoute2.slice(-1));
-        // if (currentRoute2.slice(-1)[0])
-
-        let collect = {};
-        station.trains.map(currentTrain => {
-          let threshold = previousStationTimetoNext;
-
-          //   console.log(threshold);
-          let currentDestinationName = currentTrain.abbreviation;
-          //   console.log(currentDestinationName);
-          let currentDestination = obj[currentDestinationName];
-          let routeTotalTime = routesWithSchedules[0].timeToDestination;
-          //   console.log(routeTotalTime);
-          let firstStation = routesWithSchedules[0];
-          let idx2 = routeStations.indexOf(currentDestinationName);
-          let currentRoute = routesWithSchedules.slice(0, idx2 + 1);
-          let collect = {};
-
-          let estimates = currentTrain.estimate;
-          //   console.log(estimates);
-          //   const abc = estimates.filter(ele => {
-          //     return (
-          //       ele.hexcolor === routeHexColor && ele.direction === routeDirection
-          //     );
-          //   });
-          currentDestination3 = currentDestinationName;
-          stationDepartures["destination"] = currentDestinationName;
-          stationDepartures["departures"] = estimates;
-          stationDepartures["currentName"] = station.abbr;
-          let newObj = merge({}, stationDepartures);
-          trains.push(newObj);
-          // trains.push({
-          //   destination: currentDestinationName,
-          //   departures: estimates
-          // });
-
-          // trains.concat(estimates);
-          // estimates.map((estimate, idx2) => {
-          //   console.log(estimate);
-
-          //   if (
-          //     (estimate.direction === "South" && routeNumber === "2") ||
-          //     estimate.hexcolor === "#c463c5"
-          //   ) {
-          //     console.log(estimate, station, route, currentDestinationName);
-          //     return;
-          //   }
-          //   trains.push(estimate);
-          //   collect[currentDestinationName] = estimate;
-          // });
-
-          //   console.log(trains);
-        });
-      }
-    });
-    console.log(trains);
-    return (
-      <LiveTrains
-        trains={trains}
-        routeStations={routeStations}
-        // destination={currentDestination3}
-        hexcolor={routeHexColor}
-        direction={routeDirection}
-        routeNumber={routeNumber}
-        schedule={this.props.schedule}
-        stationObj={stationsObj}
-        waypoints={waypoints2}
-        fetchStationDepartures={this.props.fetchStationDepartures}
-        routeNumber={routeNumber}
-      />
-    );
-  }
-
-  render() {
-    const route = this.props.route;
-    // const routeNumber = route.number;
-    // const routeDestination = routes[routeNumber].abbreviation;
-    // console.log(routeDestination);
-    // const waypoints3 = this.props.waypoints.waypoints || [];
-    // const routeStations = route.stations;
-    // const newRouteStations = routeStations.map(ele => {
-    //   let station2 = allStations[ele];
-    //   return station2;
-    // });
-
-    // console.log(waypoints3);
-
-    //     console.log(newRouteStations);
-
-    //     // let abc = newRouteStations.map(station => {
-    //     //   //   let results = [];
-    //     //   //   station["nextTrains"] = results;
-
-    //     //   return station.etd.forEach(destination => {
-
-    //     //     console.log(destination);
-    //     //     if (routeDestination.includes(destination.abbreviation)) {
-    //     //       return (station["next"] = destination);
-    //     //     }
-    //     //   });
-    //     // });
-
-    //     let stationEtds = newRouteStations.map(station => {
-    //       let obj = {};
-    //       obj["departures"] = station.etd;
-    //       obj["name"] = station.name;
-    //       return obj;
-    //     });
-
-    //     console.log(stationEtds);
-
-    //     // let stationArivals = stationEtds.map(destination => {
-    //     //   let results = [];
-    //     //   //   console.log(destination.abbreviation);
-    //     //   //   console.log(routeDestination);
-    //     //   //   if (routeDestination.includes(destination.abbreviation)) {
-    //     //   //     console.log("hi");
-    //     //   //     results.push(destination);
-    //     //   //   }
-
-    //     //   return destination.departures;
-    //     // });
-    //     let arr = [];
-    //     stationEtds.forEach(ele => {
-    //       console.log(ele);
-    //       let allDepartures = ele.departures;
-    //       allDepartures.forEach(ele2 => {
-    //         console.log(ele2);
-
-    //         let dist = ele2.abbreviation;
-    //         console.log(dist);
-    //         console.log(routeDestination);
-    //         let anc = [];
-
-    //         console.log(routeDestination.includes(String(dist)));
-
-    //         if (routeDestination.includes(String(dist))) {
-    //           console.log("hi");
-    //           anc.push(ele2);
-    //           let trains = ele.trains || [];
-    //           let newt = trains.concat(anc);
-    //           console.log(newt);
-    //           ele["trains"] = newt;
-    //         }
-    //       });
-
-    //       arr.push(ele);
-    //     });
-
-    //     console.log(arr);
-
-    // console.log(stationArivals);
-
-    // let test = stationArivals.map(ele => {
-    //   console.log(ele);
-    //   return ele.map(ele2 => {
-    //     let results = [];
-    //     console.log(ele2);
-    //     if (routeDestination.includes(ele2.abbreviation)) {
-    //       results.push(ele2);
-    //     }
-    //     return results;
-    //   });
-    // });
-
-    // console.log(test);
-
-    // console.log(stationArivals);
-
-    // newRouteStations.forEach(ele => {
-    //   let station2 = allStations[ele.abbr];
-    //   let station2Lat = parseFloat(station2.gtfs_latitude);
-    //   let station2Long = parseFloat(station2.gtfs_longitude);
-    //   let arr = [station2Lat, station2Long];
-    //   ele["location"] = arr;
-    // });
-
-    // console.log(newRouteStations);
-    // console.log(schedule);
-
-    // newRouteStations.forEach((ele, idx) => {
-    //   let scheduleData = schedule[idx];
-
-    //   if (scheduleData && scheduleData.timeToNextStation) {
-    //     ele["timeToNextStation"] = scheduleData.timeToNextStation;
-    //     ele["nextStation"] = scheduleData.nextStationName;
-    //   }
-    // });
-
-    // console.log(newRouteStations);
-    if (route.length === 0) {
-      return <p>loading</p>;
-    } else {
-      return (
-        <div>
-          {/* {route.stations.map(ele2 => {
-          let station = allStations[ele2];
-          return (
-            <Station station={station} key={`marker-${station.abbr}`}></Station>
-          );
-        })} */}
-
-          {this.renderStops()}
-          {/* {waypoints3.map(ele => {
-          return <Polyline positions={ele} />;
-        })} */}
-          {this.drawPolyline()}
-          {this.renderTrains()}
-        </div>
-      );
-    }
-  }
-}
-
-// const msp = state => ({ etas: state.etas });
-
-// export default connect(
-//   msp,
-//   null
-// )(Route);
-export default Route;
+const msp = (state, ownProps) => {
+  const route = state.routes[ownProps.routeNumber];
+  const routeID = route.routeID;
+
+  const etas = state.etas;
+  const waypoints = state.waypoints[Number(ownProps.routeNumber) - 1];
+  console.log(waypoints);
+  const allStations = state.stations;
+  const routeHexcolor = route.hexcolor;
+  const routeDirection = ROUTES[ownProps.routeNumber].direction;
+  let routeStations = route.stations;
+  const trains = route.trains;
+  console.log(trains);
+  // const firstStation = routeStations[0].stationName;
+  // console.count();
+  // const trains = [];
+  // let routeStationNames = routeStations.map(station => {
+  //   return station.stationName;
+  // });
+  // console.log(routeStationNames);
+  // let allStat;
+
+  // if (route.number === "2") {
+  //   routeStations = routeStations.slice(0, -2);
+  //   routeStationNames = routeStationNames.slice(0, -2);
+  // }
+
+  // console.log(routeStations, routeStationNames);
+
+  // routeStations.map((station, idx) => {
+  //   let stationName = station.stationName;
+  //   let departures = station.trains;
+  //   let previousStation = routeStations[idx - 1];
+  //   let prevName;
+  //   if (previousStation) {
+  //     prevName = previousStation.stationName;
+  //   }
+
+  //   departures.map(departure => {
+  //     let destination = departure.abbreviation;
+  //     let destinationIDX = routeStationNames.length - 1;
+  //     console.log(destination);
+  //     if (previousStation && previousStation.trains) {
+  //       let index = findIndex(previousStation.trains, function(o) {
+  //         return o.abbreviation === destination;
+  //       });
+  //       let previousStationDepartures;
+  //       if (index > -1) {
+  //         previousStationDepartures = previousStation.trains[index];
+  //       }
+  //       let estimates = departure.estimate;
+  //       let minutes = estimates[0].minutes;
+  //       let direction = estimates[0].direction;
+  //       let hexcolor = estimates[0].hexcolor;
+  //       // let id = uuidv4();
+
+  //       let id = stationName + routeID + estimates[0].platform;
+
+  //       console.log(id);
+  //       console.log(minutes, direction, hexcolor);
+  //       if (
+  //         minutes === "Leaving" &&
+  //         direction === routeDirection &&
+  //         hexcolor === routeHexcolor
+  //       ) {
+  //         console.log("leaving", stationName);
+  //         let station2 = allStations[stationName];
+  //         let station2Lat = parseFloat(station2.gtfs_latitude);
+  //         let station2Long = parseFloat(station2.gtfs_longitude);
+  //         let arr2 = [station2Lat, station2Long];
+  //         let nextStation;
+
+  //         if (idx + 1 !== undefined) {
+  //           nextStation = routeStations[idx + 1];
+  //         }
+  //         let firstTrain = false;
+  //         if (idx === 0 || (idx === 1 && stationName === "SFIA")) {
+  //           firstTrain = true;
+  //         }
+  //         let lastTrain = false;
+  //         if (destinationIDX - idx === 1) {
+  //           lastTrain = true;
+  //         }
+  //         //   let id2 = nextStation.stationName + routeID + estimates[0].platform;
+  //         let train = {
+  //           slice: arr2,
+  //           id: id,
+  //           station: stationName,
+  //           leaving: true,
+  //           id2: id,
+  //           firstTrain,
+  //           lastTrain
+  //         };
+  //         trains.push(train);
+  //       } else {
+  //         let prevStationEstimate;
+  //         if (previousStationDepartures) {
+  //           prevStationEstimate = previousStationDepartures.estimate[0];
+  //         }
+  //         let prevStationMinutes;
+  //         let prevStationDirection;
+  //         let prevStationHexcolor;
+  //         if (prevStationEstimate) {
+  //           prevStationMinutes = Number(prevStationEstimate.minutes);
+  //           prevStationDirection = prevStationEstimate.direction;
+  //           prevStationHexcolor = prevStationEstimate.hexcolor;
+  //         }
+  //         console.log(
+  //           stationName,
+  //           prevName,
+  //           minutes,
+  //           prevStationMinutes,
+  //           prevStationDirection,
+  //           prevStationHexcolor
+  //         );
+
+  //         let diff = Number(minutes) - prevStationMinutes;
+  //         console.log(diff);
+  //         if (
+  //           diff < 0 &&
+  //           direction === prevStationDirection &&
+  //           hexcolor === prevStationHexcolor
+  //         ) {
+  //           console.log("in-between");
+  //           console.log(stationName, prevStationMinutes, diff);
+  //           let station2 = allStations[stationName];
+  //           let station2Lat = station2.gtfs_latitude;
+  //           let station2Long = station2.gtfs_longitude;
+  //           let arr2 = [station2Lat, station2Long];
+  //           let station3 = allStations[prevName];
+  //           let timeToStation = schedules[prevName].timeToNextStation;
+  //           let station3Lat = station3.gtfs_latitude;
+  //           let station3Long = station3.gtfs_longitude;
+  //           let arr3 = [station3Lat, station3Long];
+  //           let nearestPoint = geolib.findNearest(arr2, waypoints.waypoints);
+  //           let nearestPoint2 = geolib.findNearest(arr3, waypoints.waypoints);
+  //           console.log(nearestPoint, nearestPoint2);
+
+  //           let stationIdx = indexOf(waypoints["waypoints"], nearestPoint);
+  //           //   let stationIdx2 = indexOf(waypoints["waypoints"], nearestPoint2);
+  //           let stationIdx3 = indexOf(waypoints["waypoints"], nearestPoint2);
+  //           let waypointsSlice = waypoints.waypoints.slice(
+  //             stationIdx3,
+  //             stationIdx
+  //           );
+  //           console.log(stationIdx, stationIdx3, waypointsSlice);
+  //           let distanceToCover = geolib.getPathLength(waypointsSlice);
+
+  //           console.log(distanceToCover, stationName);
+  //           let metersBetweenWayPoints = Math.round(
+  //             distanceToCover / waypointsSlice.length
+  //           );
+
+  //           const bartSpeed = 10;
+  //           let timeInSeconds = Number(minutes) * 60;
+  //           let leftToCoverMeters = timeInSeconds * bartSpeed;
+  //           console.log(leftToCoverMeters);
+  //           let distanceCovered = distanceToCover - leftToCoverMeters;
+  //           let currentLocationIdx;
+
+  //           if (distanceCovered <= 0) {
+  //             currentLocationIdx = waypointsSlice.length - 1;
+  //           } else {
+  //             currentLocationIdx = Math.round(
+  //               distanceCovered / metersBetweenWayPoints
+  //             );
+  //           }
+  //           let currentLocation = waypointsSlice[currentLocationIdx];
+  //           let animationTime = 60;
+  //           let distanceToCoverForAnimation = 600;
+  //           let slice2 = waypointsSlice.slice(currentLocationIdx, stationIdx);
+  //           let abcd = Math.round(600 / slice2.length);
+  //           // let distanceToCover2 = geolib.getPathLength(waypoints.slice2);
+  //           // let metersBetween2 = distanceToCover2 / slice2.length;
+  //           let ratio2 = 60 / timeInSeconds;
+  //           let path = leftToCoverMeters / 600;
+  //           let slice3;
+
+  //           if (path <= 1) {
+  //             slice3 = slice2.slice(-10);
+  //           } else {
+  //             let newPath = Math.round(slice2.length / path);
+  //             if (newPath >= 10) {
+  //               slice3 = slice2.slice(0, newPath).slice(0, 11);
+  //             } else {
+  //               slice3 = slice2.slice(0, newPath);
+  //             }
+  //           }
+
+  //           // let nums = path / metersBetween;
+
+  //           // if (ratio2 === 1) {
+  //           //     slice3 = slice2;
+  //           // }
+  //           // else if (ratio > 0.5) {
+  //           //       let sliceCenter7 = geolib.getCenter(slice2);
+  //           //   let nearestPoint5 = geolib.findNearest(sliceCenter2, slice4);
+  //           //   let stationIdx5 = indexOf(slice4, nearestPoint5);
+  //           //   nearestPoint5 = slice4[stationIdx5 + 10];
+  //           // }
+
+  //           console.log(
+  //             timeInSeconds,
+  //             leftToCoverMeters,
+  //             distanceToCover,
+  //             distanceCovered,
+  //             currentLocationIdx,
+  //             waypointsSlice.length,
+  //             currentLocation,
+  //             stationName,
+  //             destination,
+  //             routeID,
+  //             slice3
+  //           );
+
+  //           let firstTrain = false;
+  //           if (idx === 1 || (idx == 2 && prevName === "SFIA")) {
+  //             firstTrain = true;
+  //           }
+  //           let lastTrain = false;
+  //           if (destinationIDX - idx === 1) {
+  //             lastTrain = true;
+  //           }
+
+  //           let train = {
+  //             location: currentLocation,
+  //             id: id,
+  //             slice: slice3,
+  //             station: stationName,
+  //             lastTrain,
+  //             firstTrain
+  //           };
+  //           trains.push(train);
+
+  //           // let ratio = Number(minutes) / Number(timeToStation);
+  //           // console.log(ratio);
+  //           // // waypointsSlice = waypointsSlice.slice(
+  //           // //   Math.round(waypointsSlice.length * ratio)
+  //           // // );
+  //           // let sliceCenter = geolib.getCenter(waypointsSlice);
+
+  //           // let nearestPoint4 = geolib.findNearest(sliceCenter, waypointsSlice);
+  //           // let stationIdx4 = indexOf(waypointsSlice, nearestPoint4);
+  //           // nearestPoint4 = waypointsSlice[stationIdx4];
+  //           // console.log(nearestPoint4);
+  //           // console.log(stationIdx4);
+
+  //           // if (ratio === 0.5) {
+  //           //   let train = {
+  //           //     location: nearestPoint4,
+  //           //     id: id,
+  //           //     station: stationName
+  //           //   };
+
+  //           //   console.log(train);
+  //           //   trains.push(train);
+  //           // } else if (ratio < 0.5) {
+  //           //   let slice4 = waypointsSlice.slice(0, stationIdx4);
+  //           //   let sliceCenter2 = geolib.getCenter(slice4);
+  //           //   let nearestPoint5 = geolib.findNearest(sliceCenter2, slice4);
+  //           //   let stationIdx5 = indexOf(slice4, nearestPoint5);
+  //           //   nearestPoint5 = slice4[stationIdx5 + 10];
+  //           //   let train = {
+  //           //     location: nearestPoint5,
+  //           //     id: id,
+  //           //     station: stationName
+  //           //   };
+  //           //   console.log(train);
+  //           //   trains.push(train);
+  //           // } else {
+  //           //   let slice5 = waypointsSlice.slice(
+  //           //     stationIdx4,
+  //           //     waypointsSlice.length
+  //           //   );
+  //           //   let sliceCenter3 = geolib.getCenter(slice5);
+  //           //   let nearestPoint6 = geolib.findNearest(sliceCenter3, slice5);
+  //           //   let stationIdx6 = indexOf(slice5, nearestPoint6);
+  //           //   nearestPoint6 = slice5[stationIdx6];
+  //           //   let train = {
+  //           //     location: nearestPoint6,
+  //           //     id: id,
+  //           //     station: stationName
+  //           //   };
+  //           //   console.log(train);
+  //           //   trains.push(train);
+  //           // }
+  //         }
+  //       }
+
+  //       // console.log(previousStationDepartures);
+  //       // estimates.map((estimate, idx2) => {
+  //       //   let minutes = estimate.minutes;
+  //       //   console.log(minutes);
+  //       //   if (minutes === "Leaving") {
+  //       //     let station2 = allStations[stationName];
+  //       //     let station2Lat = parseFloat(station2.gtfs_latitude);
+  //       //     let station2Long = parseFloat(station2.gtfs_longitude);
+  //       //     let arr2 = [station2Lat, station2Long];
+  //       //     return trains.push(arr2);
+  //       //   } else {
+  //       //     let prevStationEstimate;
+  //       //     if (previousStationDepartures) {
+  //       //       prevStationEstimate = previousStationDepartures.estimate[idx2];
+  //       //     }
+  //       //     let prevStationMinutes;
+  //       //     if (prevStationEstimate) {
+  //       //       prevStationMinutes = Number(prevStationEstimate.minutes);
+  //       //     }
+  //       //     console.log(stationName, prevName, minutes, prevStationMinutes);
+
+  //       //     let diff = Number(minutes) - prevStationMinutes;
+  //       //     console.log(diff);
+  //       //     if (diff < 0) {
+  //       //       console.log("in-between");
+  //       //       console.log(stationName, prevStationMinutes, diff);
+  //       //     }
+  //       //   }
+  //       // });
+  //     }
+  //   });
+  // });
+
+  // console.log(routeStations);
+
+  // console.log(route);
+  // console.log(trains);
+  // console.count();
+
+  return {
+    trains: trains,
+    route: state.routes[ownProps.routeNumber],
+    routeID: routeID,
+    allStations,
+    etas: state.etas,
+    waypoints
+  };
+};
+
+const mdp = dispatch => {
+  return {
+    getCurrentEtas: () => dispatch(getCurrentEtas()),
+    createTrains: route => dispatch(createTrains(route)),
+    updateTrains: route => dispatch(updateTrains(route))
+  };
+};
+
+export default connect(
+  msp,
+  mdp
+)(Route);

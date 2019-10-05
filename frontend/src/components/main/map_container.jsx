@@ -14,7 +14,8 @@ class MapPage extends Component {
 
     this.state = {
       waypoints: this.props.waypoints || [],
-      routes: this.props.routes
+      routes: this.props.routes,
+      currentRoutes: this.props.currentRoutes
     };
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
@@ -24,19 +25,22 @@ class MapPage extends Component {
     this.setState({ positions: arr });
   }
 
-  //   componentDidMount() {
-  //     this.timer = setInterval(
-  //       () =>
-  //         this.setState({
-  //           key: Math.floor(Math.random() * 100) + 1
-  //         }),
-  //       1000
-  //     );
-  //   }
+  // componentDidMount() {
+  //   this.timer = setInterval(
+  //     () =>
+  //       this.setState({
+  //         key: Math.floor(Math.random() * 100) + 1
+  //       }),
+  //     1000
+  //   );
+  // }
 
   componentDidMount() {
     console.log("intermi");
-    this.setState({ allStations: this.props.allStations });
+    this.setState({
+      allStations: this.props.allStations,
+      currentRoutes: this.props.currentRoutes
+    });
     console.log("map");
     console.count();
   }
@@ -65,7 +69,7 @@ class MapPage extends Component {
 
     const way2 = {};
 
-    this.props.currentRoutes.forEach(ele => {
+    this.props.currentRoutes.map(ele => {
       let routeNum = Number(ele.value);
       // console.log(routeNum);
       way2["waypoints"] = this.state.waypoints[routeNum - 1].waypoints;
@@ -91,8 +95,10 @@ class MapPage extends Component {
           fetchStationDepartures={this.props.fetchStationDepartures}
         ></AllStations> */}
         <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
-        {this.props.currentRoutes.map((ele, idx) => {
+        {this.state.currentRoutes.map((ele, idx) => {
           let route = routes[ele.value];
+          let routeNumber = route.number;
+          let routeID = route.routeID;
           let schedule = this.props.schedules[route.number];
           // console.log(schedule);
 
@@ -104,12 +110,13 @@ class MapPage extends Component {
 
           return (
             <RouteContainer
-              route={route}
+              // route={route}
               allStations={allStations}
               waypoints={way2}
               schedule={schedule}
+              routeNumber={route.number}
               getCurrentEtas={this.props.getCurrentEtas}
-              key={String(route.number)}
+              key={routeID}
               etas={this.props.etas}
               fetchStationDepartures={this.props.fetchStationDepartures}
             ></RouteContainer>

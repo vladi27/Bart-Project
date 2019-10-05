@@ -49,17 +49,17 @@ const scheduleReducer = (state = {}, action) => {
             train.stop[train.stop.length - 2]["@origTime"] !== undefined)
         );
       });
-      console.log(routeLength);
+      // console.log(routeLength);
 
-      console.log(routeToExplore);
-      console.log(routeToExplore[0]);
+      // console.log(routeToExplore);
+      // console.log(routeToExplore[0]);
 
       let trainRoute = routeToExplore[0].stop;
       console.log(trainRoute.length);
 
-      console.log(randomRoute);
+      // console.log(randomRoute);
 
-      console.log(trainRoute);
+      // console.log(trainRoute);
 
       if (routeToExplore) {
         trainRoute.forEach((stop, idx) => {
@@ -137,7 +137,7 @@ const scheduleReducer = (state = {}, action) => {
             }
           }
 
-          console.log(newObj);
+          // console.log(newObj);
           obj[newObj.stationName] = newObj;
           results.push(newObj);
         });
