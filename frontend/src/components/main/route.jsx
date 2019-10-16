@@ -1,6 +1,6 @@
 /* global _ */
 
-import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
+import { Map, TileLayer, CircleMarker, Polyline, Marker } from "react-leaflet";
 import React, { Component, PureComponent } from "react";
 
 import Station from "./stations";
@@ -8,12 +8,13 @@ import * as geolib from "geolib";
 import merge from "lodash/merge";
 import indexOf from "lodash/indexOf";
 import { connect } from "react-redux";
-
+import iconTrain from "./map_icon";
 import findIndex from "lodash/findIndex";
 import TrainContainer from "./train_container";
 import date from "date-and-time";
 import LiveTrains from "./live_trains";
-import NextStationsReducer from "../../reducers/next_station_reducer_nb";
+import TrainMarkerContainer from "./train_marker_container";
+
 const uuidv4 = require("uuid/v4");
 
 let _ = require("lodash.indexof");
@@ -111,6 +112,9 @@ class Route extends PureComponent {
     };
     console.log(this.props);
     this.intervalId = null;
+    this.handleChange = this.handleChange.bind(this);
+    this.getOrCreateRef = this.getOrCreateRef.bind(this);
+    this.references = {};
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
   }
@@ -118,199 +122,306 @@ class Route extends PureComponent {
   componentDidMount() {
     const waypoints4 = this.props.waypoints;
     const etas = this.props.etas;
-    const num = this.props.route.number;
+
     const allTrains = this.props.trains;
+    const route = this.props.route;
+    const num = route.number;
 
     console.count();
-    // this.props.getCurrentEtas();
+    console.log(num);
+    this.props.getCurrentEtas("create", num);
 
-    this.props.updateTrains(num);
+    // this.props.updateTrains(num);
     // this.setState(prev => ({
     //   waypoints: prev.waypoints.concat([waypoints4])
     // }));
 
-    // this.intervalId = setInterval(() => {
-    //   this.props.updateTrains(num);
-    // }, 25000);
+    //  this.props.saveTrains(this.props.trains, num);
+    this.setState({ trains: this.props.trains });
+
+    // this.setState(() => {
+    //   let trains = this.props.trains || [];
+    //   trains.map(ele => {
+    //     return { [ele.id]: [] };
+    //   });
+    // });
+
+    // this.props.trains.map(train => {
+    //   this.setState({ [train.id]: [] });
+    // });
+
+    //this.props.getCurrentEtas();
+
+    // setTimeout(() => {
+    //   this.setState({ trains: this.props.trains });
+    //   //.then(result => {
+    //   //   console.log(result);
+    //   //   routeIds.map(id => {
+    //   //     let route = this.props.routes[id];
+    //   //     let etas = this.props.etas;
+    //   //     console.log(route);
+    //   //     console.log(etas);
+    //   //     this.props.createTrains(route, etas);
+    //   //   });
+    //   // });
+    // }, 0);
+
+    // this.setState({ trains: allTrains });
+
+    // this.intervalId3 = setInterval(() => {
+    //   this.props.saveTrains(this.props.trains, num);
+    // }, 17000);
+  }
+
+  getOrCreateRef(id) {
+    if (!this.references.hasOwnProperty(id)) {
+      this.references[id] = React.createRef();
+    }
+    return this.references[id];
   }
 
   componentWillUnmount() {
-    clearInterval(this.intervalId);
-  }
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    // Store prevId in state so we can compare when props change.
-    // Clear out previously-loaded data (so we don't render stale stuff).
-    // if (props.id !== state.prevId) {
-    //   return {
-    //     externalData: null,
-    //     prevId: props.id,
-    //   };
-    // }
-    // No state update necessary
-    // return null;
-
-    // if (nextProps.trains !== prevState.trains && prevState.trains !== []) {
-    //   return { trains: [] };
-    // }
-
-    console.count();
-
-    // if (prevState.routeID === null && nextProps.routeID) {
-    //   {
-    //     nextProps.updateTrains(nextProps.route.number);
-    //     return {
-    //       routeID: nextProps.routeID
-    //     };
-    //   }
-    // }
-
-    // if (
-    //   prevState.routeID === nextProps.routeID &&
-    //   prevState.trains.length !== 0 &&
-    //   nextProps.trains.length === prevState.trains.length + 1
-    // ) {
-    //   let addedIndex = findIndex(nextProps.trains, "firstTrain");
-    //   let abc = nextProps.trains.slice();
-    //   let train = prevState.trains[addedIndex];
-    //   let abc2 = abc.concat(train);
-    //   let abc3 = [];
-    //   abc2.map((ele, idx) => {
-    //     if (idx !== addedIndex) {
-    //       abc3.push(ele);
-    //     }
-    //   });
-    //   console.log(nextProps.trains);
-    //   console.log(addedIndex);
-    //   let addedTrain = nextProps.trains[addedIndex];
-    //   return {
-    //     trainAdded: addedIndex,
-
-    //     trains: abc3
-    //   };
-    // }
-    // if (
-    //   prevState.routeID === nextProps.routeID &&
-    //   nextProps.trains.length !== 0 &&
-    //   nextProps.trains.length === prevState.trains.length - 1
-    // ) {
-    //   let removedIndex = findIndex(prevState.trains, "lastTrain");
-    //   console.log(removedIndex);
-    //   let copy = prevState.trains.slice();
-    //   copy[removedIndex] = undefined;
-
-    //   return {
-    //     trains: copy,
-
-    //     trainRemoved: removedIndex
-    //   };
-    // }
-
-    // if (
-    //   prevState.routeID === nextProps.routeID &&
-    //   prevState.trains !== nextProps.trains
-    // ) {
-    //   console.count();
-    //   console.log(prevState, nextProps);
-    //   return {
-    //     trains: []
-    //   };
-    // }
-    console.log(nextProps, prevState);
-    return null;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    console.log(prevProps, prevState);
-    const allTrains = this.props.trains.slice();
     const num = this.props.route.number;
 
-    if (
-      // prevProps.trains === this.props.trains &&
-      this.props.etas !== prevProps.etas
-    ) {
-      console.count();
-      // this.setState({ trains: this.props.trains });
-      return this.props.updateTrains(num);
-    }
-    if (prevProps.trains !== this.props.trains) {
-      console.count();
-      return this.setState({ trains: this.props.trains });
-      // this.props.updateTrains(num);
-    }
+    this.props.getCurrentEtas();
 
-    // if (this.state.trainAdded !== null) {
-    //   let idx = this.state.trainAdded;
-
-    //   let stateTrain = this.props.trains.slice();
-    //   let test = stateTrain.splice(idx, 1);
-    //   console.log(test);
-    //   stateTrain.concat([test]);
-    //   console.log(stateTrain);
-    //   return this.setState({
-    //     trains: stateTrain,
-    //     trainAdded: null
-    //   });
-    // }
-
-    // if (this.state.trainRemoved !== null) {
-    //   let idx = this.state.trainRemoved;
-    //   console.log(prevProps);
-    //   let stateTrains3 = prevProps.trains.slice();
-    //   stateTrains3[idx] = undefined;
-    //   return this.setState({ trains: stateTrains3, trainRemoved: null });
-    // }
-    // if (allTrains.length) {
-    //   console.count();
-    //   this.setState({ trains: this.props.trains });
-    // }
+    clearInterval(this.intervalId3);
   }
 
-  // addTrains(value) {
-  //   const trains = this.state.trains;
-  //   const newTrains = trains.concat([value]);
-  //   return this.setState({ trains: newTrains });
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   // Store prevId in state so we can compare when props change.
+  //   // Clear out previously-loaded data (so we don't render stale stuff).
+  //   // if (props.id !== state.prevId) {
+  //   //   return {
+  //   //     externalData: null,
+  //   //     prevId: props.id,
+  //   //   };
+  //   // }
+  //   // No state update necessary
+  //   // return null;
+
+  //   // if (nextProps.trains !== prevState.trains && prevState.trains !== []) {
+  //   //   return { trains: [] };
+  //   // }
+
+  //   console.count();
+
+  //   // if (prevState.routeID === null && nextProps.routeID) {
+  //   //   {
+  //   //     nextProps.updateTrains(nextProps.route.number);
+  //   //     return {
+  //   //       routeID: nextProps.routeID
+  //   //     };
+  //   //   }
+  //   // }
+
+  //   // if (
+  //   //   prevState.routeID === nextProps.routeID &&
+  //   //   prevState.trains.length !== 0 &&
+  //   //   nextProps.trains.length === prevState.trains.length + 1
+  //   // ) {
+  //   //   let addedIndex = findIndex(nextProps.trains, "firstTrain");
+  //   //   let abc = nextProps.trains.slice();
+  //   //   let train = prevState.trains[addedIndex];
+  //   //   let abc2 = abc.concat(train);
+  //   //   let abc3 = [];
+  //   //   abc2.map((ele, idx) => {
+  //   //     if (idx !== addedIndex) {
+  //   //       abc3.push(ele);
+  //   //     }
+  //   //   });
+  //   //   console.log(nextProps.trains);
+  //   //   console.log(addedIndex);
+  //   //   let addedTrain = nextProps.trains[addedIndex];
+  //   //   return {
+  //   //     trainAdded: addedIndex,
+
+  //   //     trains: abc3
+  //   //   };
+  //   // }
+  //   // if (
+  //   //   prevState.routeID === nextProps.routeID &&
+  //   //   nextProps.trains.length !== 0 &&
+  //   //   nextProps.trains.length === prevState.trains.length - 1
+  //   // ) {
+  //   //   let removedIndex = findIndex(prevState.trains, "lastTrain");
+  //   //   console.log(removedIndex);
+  //   //   let copy = prevState.trains.slice();
+  //   //   copy[removedIndex] = undefined;
+
+  //   //   return {
+  //   //     trains: copy,
+
+  //   //     trainRemoved: removedIndex
+  //   //   };
+  //   // }
+
+  //   // if (
+  //   //   prevState.routeID === nextProps.routeID &&
+  //   //   prevState.trains !== nextProps.trains
+  //   // ) {
+  //   //   console.count();
+  //   //   console.log(prevState, nextProps);
+  //   //   return {
+  //   //     trains: []
+  //   //   };
+  //   // }
+  //   console.log(nextProps, prevState);
+  //   return null;
   // }
 
-  renderStops() {
-    const allStations = this.props.allStations;
-    const schedule = this.props.schedule;
-    const route = this.props.route;
-    const routeNumber = route.number;
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.count();
+  //   return (
+  //     this.props.trains === nextProps.trains ||
+  //     this.state.trains === nextState.trains ||
+  //     this.props.trains !== nextProps.trains ||
+  //     this.state.trains === nextState.trains
+  //   );
+  // }
 
-    const hexcolor = routes[routeNumber].hexcolor;
-    console.log(hexcolor);
-    if (!route.stations.length === 0) {
-      return <p>loading</p>;
-    } else {
-      return (
-        <div>
-          {route.stations.map(ele2 => {
-            let station = allStations[ele2.stationName];
-            let abbr = station.abbr;
-            return (
-              <Station
-                station={station}
-                hexcolor={hexcolor}
-                key={abbr}
-              ></Station>
-            );
-          })}
-        </div>
-      );
+  handleChange(id, location) {
+    console.count();
+    this.setState({ [id]: location });
+  }
+  componentDidUpdate(prevProps, prevState) {
+    console.log(prevProps, prevState);
+    // const allTrains = this.props.trains.slice();
+    const num = this.props.route.number;
+    const stations = this.props.route.stations;
+
+    // if (this.state.trains !== prevState.trains && prevState.trains !== null) {
+    //   console.count();
+    //   // this.setState({ trains: this.props.trains });
+    //   this.props.saveTrains(this.props.trains, num);
+    // }
+
+    // if (this.props.newTrains.length > prevProps.newTrains.length) {
+    //   let trains3 = this.props.newTrains.concat(this.props.trains);
+    //   this.props.saveTrains(trains3, num);
+    // }
+
+    if (prevProps.trains === undefined && this.props.trains) {
+      console.count();
+      this.props.trains.map(ele => {
+        this.setState({ [ele.id]: [] });
+      });
     }
+
+    if (this.state.trains !== this.props.trains) {
+      console.count(num);
+      console.log(num);
+      console.count();
+
+      this.setState({ trains: this.props.trains });
+    }
+
+    // if (
+    //   this.state.trains === prevProps.trains &&
+    //   this.state.trains === prevState.trains
+    //   // &&
+    //   // prevProps.trains !== this.props.trains
+    // ) {
+    //   console.count(num);
+    //   console.log(num);
+    //   console.count();
+
+    //   this.props.saveTrains(this.props.trains, num);
+    // }
+
+    // if (this.props.etas !== prevProps.etas) {
+    //   this.props.updateTrains(num, this.props.etas, stations);
+    // }
   }
 
-  drawPolyline() {
-    // console.log(this.state);
-    const route = this.props.route;
-    const hexcolor = route.hexcolor;
+  //   if (this.state.trains !== this.props.trains) {
+  //     console.count();
+  //     return this.setState({ trains: this.props.trains });
+  //     // this.props.updateTrains(num);
+  //   }
 
-    const waypoints3 = [this.props.waypoints];
-    return waypoints3.map(ele => {
-      return <Polyline positions={ele.waypoints} key={hexcolor} />;
-    });
-  }
+  //   // if (this.state.trainAdded !== null) {
+  //   //   let idx = this.state.trainAdded;
+
+  //   //   let stateTrain = this.props.trains.slice();
+  //   //   let test = stateTrain.splice(idx, 1);
+  //   //   console.log(test);
+  //   //   stateTrain.concat([test]);
+  //   //   console.log(stateTrain);
+  //   //   return this.setState({
+  //   //     trains: stateTrain,
+  //   //     trainAdded: null
+  //   //   });
+  //   // }
+
+  //   // if (this.state.trainRemoved !== null) {
+  //   //   let idx = this.state.trainRemoved;
+  //   //   console.log(prevProps);
+  //   //   let stateTrains3 = prevProps.trains.slice();
+  //   //   stateTrains3[idx] = undefined;
+  //   //   return this.setState({ trains: stateTrains3, trainRemoved: null });
+  //   // }
+  //   // if (allTrains.length) {
+  //   //   console.count();
+  //   //   this.setState({ trains: this.props.trains });
+  //   // }
+  // }
+
+  // // addTrains(value) {
+  // //   const trains = this.state.trains;
+  // //   const newTrains = trains.concat([value]);
+  // //   return this.setState({ trains: newTrains });
+  // // }
+
+  // // renderStops() {
+  // //   const allStations = this.props.allStations;
+  // //   const schedule = this.props.schedule;
+  // //   const route = this.props.route;
+  // //   const routeNumber = route.number;
+
+  // //   const color = routes[routeNumber].color;
+  // //   const hexcolor = routes[routeNumber].hexcolor;
+  // //   const selections = this.props.currentColors;
+  // //   const count = selections[color];
+
+  // //   if (!route.stations.length === 0) {
+  // //     return <p>loading</p>;
+  // //   } else if (count === 1) {
+  // //     return (
+  // //       <div>
+  // //         {route.stations.map(ele2 => {
+  // //           let station = allStations[ele2.stationName];
+  // //           let abbr = station.abbr;
+  // //           return (
+  // //             <Station
+  // //               station={station}
+  // //               hexcolor={hexcolor}
+  // //               key={abbr}
+  // //             ></Station>
+  // //           );
+  // //         })}
+  // //       </div>
+  // //     );
+  // //   }
+  // // }
+
+  // // drawPolyline() {
+  // //   // console.log(this.state);
+  // //   const route = this.props.route;
+  // //   const hexcolor = route.hexcolor;
+  // //   const routeNumber = route.number;
+
+  // //   const color = routes[routeNumber].color;
+  // //   const selections = this.props.currentColors;
+  // //   const count = selections[color];
+
+  // //   if (count === 1) {
+  // //     const waypoints3 = [this.props.waypoints];
+  // //     return waypoints3.map(ele => {
+  // //       return <Polyline positions={ele.waypoints} key={hexcolor} />;
+  // //     });
+  // //   }
+  // // }
 
   render() {
     // console.log(this.props);
@@ -323,7 +434,7 @@ class Route extends PureComponent {
     console.log(trains);
 
     console.log(this.state);
-    console.log(this.props);
+    console.log(this.props.trains);
     const id2 = uuidv4();
 
     if (!trains) {
@@ -334,19 +445,23 @@ class Route extends PureComponent {
       {
         return (
           <div>
-            {this.renderStops()}
+            {/* {this.renderStops()}
 
-            {this.drawPolyline()}
+            {this.drawPolyline()} */}
 
             {trains.length > 0 ? (
               trains.map((train, idx) => {
+                console.log(train);
                 if (train) {
-                  let slice = train.currentSlice.slice();
+                  let slice = train.currentSlice;
                   console.log(train);
+                  console.log(train.pos, train.stationName);
                   let lastLocation = train.lastLocation;
+                  let routeStation = route.stations[train.stationIdx];
 
                   let id = train.id;
                   let nextStationId;
+                  //let lastLocation = this.state[id];
 
                   // if (!Array.isArray(train.currentSlice[0])) {
                   //   slice = [
@@ -360,16 +475,42 @@ class Route extends PureComponent {
                   //   ];
                   // }
                   console.log(slice);
+                  console.log(train);
+
                   return (
+                    // <TrainMarkerContainer
+                    //   train={train}
+                    //   key={id}
+                    //   id={id}
+                    //   station={train.stationName}
+                    //   routeNumber={this.props.routeNumber}
+                    //   minutes={train.minutes}
+                    //   pos={train.pos}
+                    // ></TrainMarkerContainer>
+                    // <Marker
+                    //   position={train.pos}
+                    //   key={idx}
+                    //   icon={iconTrain}
+                    // ></Marker>
                     <TrainContainer
                       markers={slice}
                       color={color}
-                      station={train.station}
-                      interval={30000}
+                      station={train.stationName}
+                      minutes={train.minutes}
                       id={id}
+                      ratio={train.ratio}
                       key={id}
-                      lastLocation={lastLocation}
-                      nextStationId={nextStationId}
+                      routeStations={route.stations}
+                      index={train.stationIdx}
+                      routeNumber={this.props.routeNumber}
+                      train={train}
+                      //ref={this.getOrCreateRef(id)}
+                      references={this.references}
+                      getOrCreateRef={this.getOrCreateRef}
+                      //lastLocation={this.state[id]}
+                      handleChange={this.handleChange}
+                      // lastLocation={lastLocation}
+                      // nextStationId={nextStationId}
                     ></TrainContainer>
                   );
                 }

@@ -9,29 +9,31 @@ import { logout } from "./actions/session_actions";
 
 document.addEventListener("DOMContentLoaded", () => {
   let store;
+  const preloadedState = {
+    stations: {},
+    session: { isAuthenticated: true },
+    space_station: {},
+    routes: {},
+    etas: {},
+    trains: {}
+  };
+  store = configureStore();
 
   if (localStorage.jwtToken) {
     setAuthToken(localStorage.jwtToken);
 
     const decodedUser = jwt_decode(localStorage.jwtToken);
-    const preloadedState = {
-      stations: {},
-      session: { isAuthenticated: true, user: decodedUser },
-      space_station: {}
-    };
-
-    store = configureStore(preloadedState);
 
     const currentTime = Date.now() / 1000;
 
-    if (decodedUser.exp < currentTime) {
-      store.dispatch(logout());
-      window.location.href = "/login";
-    }
-  } else {
-    store = configureStore({});
+    //   if (decodedUser.exp < currentTime) {
+    //     store.dispatch(logout());
+    //     window.location.href = "/login";
+    //   }
+    // } else {
+    //   store = configureStore();
+    // }
   }
-
   window.getState = store.getState;
 
   window.store = store;

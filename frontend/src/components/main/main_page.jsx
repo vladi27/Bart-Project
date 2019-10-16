@@ -1,6 +1,6 @@
 import React, { Component, PureComponent } from "react";
 import "leaflet/dist/leaflet.css";
-import { Map, TileLayer, CircleMarker } from "react-leaflet";
+import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
 import L from "leaflet";
 // import { DropdownMultiple, Dropdown } from "reactjs-dropdown-component";
 import Select from "react-select";
@@ -9,10 +9,90 @@ import MapContainer from "./map_container";
 import { throws } from "assert";
 import WindowedSelect from "react-windowed-select";
 import RouteContainer from "./route_container";
+import uniq from "lodash/uniq";
+import Station from "./stations";
 import { components, createFilter } from "react-windowed-select";
+import findIndex from "lodash/findIndex";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
-class MainPage extends Component {
+const ROUTES4 = {
+  1: {
+    hexcolor: "#ffff33",
+    destination: "Millbrae",
+    abbreviation: ["MLBR", "SFIA"],
+    direction: "South",
+    color: "Yellow"
+  },
+
+  2: {
+    hexcolor: "#ffff33",
+    abbreviation: ["ANTC"],
+    destination: "Antioch",
+    direction: "North",
+    color: "Yellow"
+  },
+
+  3: {
+    hexcolor: "#ff9933",
+    abbreviation: ["RICH"],
+    destination: "Richmond",
+    direction: "North",
+    color: "Orange"
+  },
+
+  4: {
+    hexcolor: "#ff9933",
+    destination: ["Warm Springs"],
+    abbreviation: ["WARM"],
+    direction: "South",
+    color: "Orange"
+  },
+
+  5: {
+    color: "Green",
+    hexcolor: "#339933",
+    destination: "Daly City",
+    direction: "South",
+    abbreviation: ["DALY"]
+  },
+
+  6: {
+    color: "Green",
+    hexcolor: "#339933",
+    destination: ["Warm Springs"],
+    abbreviation: "WARM",
+
+    direction: "North"
+  },
+
+  7: {
+    color: "Red",
+    hexcolor: "#ff0000",
+
+    destination: "Daly City",
+    direction: "South",
+    abbreviation: ["DALY", "MLBR"]
+  },
+
+  8: {
+    color: "Red",
+    hexcolor: "#ff0000",
+
+    direction: "North",
+
+    destination: "Richmond",
+    abbreviation: ["RICH"]
+  }
+};
+
+const RouteColors = {
+  Yellow: 1,
+  Orange: 3,
+  Green: 5,
+  Red: 7
+};
+
+class MainPage extends React.Component {
   constructor(props) {
     super(props);
 
@@ -24,11 +104,14 @@ class MainPage extends Component {
     //   // marker: this.circleMarker
     // };
 
-    this.state = { currentSelections: [], etas: [] };
+    this.state = {
+      currentSelections: []
+    };
   }
 
   componentDidMount() {
-    const routeIds = [1, 2, 3, 4, 5, 6, 7, 8];
+    const routeIds = ["1", "2", "3", "4", "5", "6", "7", "8"];
+    const routes = this.props.routes;
     // this.props.receiveWayPoints(jsonObject);
     // this.props.fetchSpaceStation();
     // then(response =>
@@ -40,6 +123,7 @@ class MainPage extends Component {
       .then(() => {
         routeIds.map(ele => {
           this.props.fetchRouteStations(ele);
+          this.props.fetchRouteSchedules(ele);
         });
       });
 
@@ -52,22 +136,60 @@ class MainPage extends Component {
     // this.props.fetchRouteSchedules(1);
 
     this.props.receiveWayPoints(jsonObject);
-    setTimeout(() => {
-      this.props.getCurrentEtas().then(() => {
-        routeIds.map(id => {
-          this.props.createTrains(id);
-        });
-      });
-    }, 3000);
+    // setTimeout(() => {
+    //   this.props.getCurrentEtas("create");
+    //   //.then(result => {
+    //   //   console.log(result);
+    //   //   routeIds.map(id => {
+    //   //     let route = this.props.routes[id];
+    //   //     let etas = this.props.etas;
+    //   //     console.log(route);
+    //   //     console.log(etas);
+    //   //     this.props.createTrains(route, etas);
+    //   //   });
+    //   // });
+    // }, 3000);
 
-    // this.interval = setInterval(() => {
-    //   this.props.getCurrentEtas().then(() => {
-    //     this.props.updateTrains(2);
-    //   });
+    this.interval2 = setInterval(() => {
+      let current = this.state.currentSelections;
+
+      if (current && current.length > 0) {
+        current.map(ele => {
+          console.log(ele);
+          let route = ele.value;
+          let routes = "update";
+          console.log(route);
+          this.props.getCurrentEtas(routes, route);
+        });
+      }
+      // } else {
+      //   routeIds.map(id => {
+      //     let index = findIndex(current, function(o) {
+      //       return o.value == id;
+      //     });
+      //     if (index === -1) {
+      //       this.props.getCurrentEtas("create", id);
+      //     }
+      //   });
+      //   this.props.getCurrentEtas("create");
+      // }
+    }, 20000);
+
+    // this.interval2 = setInterval(() => {
+    //   this.props.getCurrentEtas("update");
+    // }, 20000);
+    // this.interval3 = setInterval(() => {
+    //   if (!current || current.length === 0) {
+    //     this.props.getCurrentEtas("create");
+    //   }
     // }, 60000);
-    this.interval = setInterval(() => {
-      this.props.getCurrentEtas();
-    }, 25000);
+    // this.interval = setInterval(() => {
+    //   let current = this.state.currentSelections;
+
+    //   if (!current || current.length === 0) {
+    //     this.props.getCurrentEtas("create");
+    //   }
+    // }, 60000);
 
     //   .then(response => this.setState({ stations: response.stations }));
     // this.props
@@ -83,7 +205,63 @@ class MainPage extends Component {
   // }
 
   componentWillUnmount() {
-    clearInterval(this.interval);
+    clearInterval(this.interval2);
+  }
+
+  renderStops() {
+    const currentRoutes = this.state.currentSelections;
+    const routes = this.props.routes;
+    const allStations = this.props.allStations;
+
+    const colors = currentRoutes.map(ele => {
+      return ROUTES4[ele.value].color;
+    });
+    console.log(colors);
+
+    const uniques = uniq(colors);
+    console.log(uniques);
+
+    const routes2 = uniques.map(ele => routes[RouteColors[ele]]);
+    console.log(routes2);
+
+    return routes2.map(route => {
+      let hexcolor = route.hexcolor;
+      return route.stations.map(ele2 => {
+        console.log(ele2);
+        let station = allStations[ele2.stationName];
+        console.log(station);
+        let abbr = station.abbr;
+        return (
+          <Station station={station} hexcolor={hexcolor} key={abbr}></Station>
+        );
+      });
+    });
+  }
+
+  drawPolyline() {
+    // console.log(this.state);
+    const currentRoutes = this.state.currentSelections;
+    const routes = this.props.routes;
+    const allStations = this.props.allStations;
+
+    const colors = currentRoutes.map(ele => {
+      return ROUTES4[ele.value].color;
+    });
+    console.log(colors);
+
+    const uniques = uniq(colors);
+    console.log(uniques);
+
+    const routes2 = uniques.map(ele => routes[RouteColors[ele]]);
+    console.log(routes2);
+
+    return routes2.map(route => {
+      let hexcolor = route.hexcolor;
+      let waypoints3 = [this.props.waypoints[Number(route.number) - 1]];
+      return waypoints3.map(ele => {
+        return <Polyline positions={ele.waypoints} key={hexcolor} />;
+      });
+    });
   }
 
   //   updateValue(value) {
@@ -97,7 +275,9 @@ class MainPage extends Component {
   // }
 
   handleChange(value) {
-    this.setState({ currentSelections: value });
+    this.setState(() => {
+      return { currentSelections: value };
+    });
   }
 
   // customFilter() {
@@ -112,6 +292,14 @@ class MainPage extends Component {
   //       }
   //     ))
   //   }, 500);
+  // }
+  // shouldComponentUpdate(nextState) {
+  //   if (this.state.currentSelections && nextState.currentSelections) {
+  //     return (
+  //       nextState.currentSelections.length ===
+  //       this.state.currentSelections.length
+  //     );
+  //   }
   // }
 
   render() {
@@ -229,27 +417,34 @@ class MainPage extends Component {
               // toggleItem={this.handleChange}
             />
           </div> */}
-        <Map center={position} zoom={11}>
+        <Map center={position} zoom={11} animate={true}>
+          {currentSelections
+            ? this.state.currentSelections.map((ele, idx) => {
+                let routeNumber = String(ele.value);
+                let id = "routeID -" + routeNumber;
+
+                console.log(routeNumber);
+
+                // let routeID = route.routeID;
+                // let schedule = this.props.schedules[route.number];
+                return (
+                  <RouteContainer
+                    // route={route}
+
+                    // waypoints={way2}
+                    routeNumber={routeNumber}
+                    currentColors={this.state}
+                    key={id}
+                  />
+                );
+              })
+            : null}
           {currentSelections ? (
-            this.state.currentSelections.map((ele, idx) => {
-              let routeNumber = ele.value;
-              let key = "routeID -" + routeNumber;
-
-              // let routeID = route.routeID;
-              // let schedule = this.props.schedules[route.number];
-              return (
-                <RouteContainer
-                  // route={route}
-
-                  // waypoints={way2}
-                  routeNumber={routeNumber}
-                  key={key}
-                />
-              );
-            })
-          ) : (
-            <div></div>
-          )}
+            <div>
+              {this.renderStops()}
+              {this.drawPolyline()}
+            </div>
+          ) : null}
           <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
           />
         </Map>

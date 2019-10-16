@@ -24,6 +24,9 @@ export const RECEIVE_ROUTE_SCHEDULES = "RECEIVE_ROUTE_SCHEDULES";
 export const RECEIVE_STATION_ETA = "RECEIVE_STATION_ETA";
 export const CREATE_TRAINS = "CREATE_TRAINS";
 export const UPDATE_TRAINS = "UPDATE_TRAINS";
+export const ADD_TRAINS = "ADD_TRAINS";
+export const SAVE_TRAINS = "SAVE_TRAINS";
+export const BUILD_WAY_POINTS = "BUILD_WAY_POINTS";
 
 const stationsSouthBound = [
   "ANTC",
@@ -173,10 +176,12 @@ export const receiveRoutes = routes => {
     routes: routes.data.root.routes.route
   };
 };
-export const receiveCurrentEtas = etas => {
+export const receiveCurrentEtas = (etas, routes, route) => {
   return {
     type: RECEIVE_CURRENT_ETAS,
-    etas: etas.data.root.station
+    etas: etas.data.root.station,
+    routes,
+    route
   };
 };
 export const receiveStationEta = (eta, abbr) => {
@@ -211,14 +216,33 @@ export const receiveRouteSchedules = (schedules, id) => ({
   schedules: schedules.data.root.route,
   id
 });
-export const createTrains = route => ({
+export const createTrains = (route, etas, sub) => ({
   type: CREATE_TRAINS,
-  route
+  route,
+  etas,
+  sub
+});
+export const addTrains = (route, etas) => ({
+  type: ADD_TRAINS,
+  route,
+  etas
+});
+export const saveTrains = (trains, routeNum) => ({
+  type: SAVE_TRAINS,
+  trains,
+  routeNum
+});
+export const buildWayPoints = routeNum => ({
+  type: BUILD_WAY_POINTS,
+
+  routeNum
 });
 
-export const updateTrains = route => ({
+export const updateTrains = (routeNum, etas, stations) => ({
   type: UPDATE_TRAINS,
-  route
+  routeNum,
+  etas,
+  stations
 });
 
 export const receiveWayPoints = jsonObj => ({
@@ -226,9 +250,9 @@ export const receiveWayPoints = jsonObj => ({
   waypoints: jsonObj
 });
 
-export const getCurrentEtas = () => dispatch =>
+export const getCurrentEtas = (routes, route) => dispatch =>
   fetchCurrentEtas()
-    .then(etas => dispatch(receiveCurrentEtas(etas)))
+    .then(etas => dispatch(receiveCurrentEtas(etas, routes, route)))
     .catch(err => console.log(err));
 
 export const fetchStationDepartures = abbr => dispatch =>

@@ -2,8 +2,6 @@ import { connect } from "react-redux";
 import {
   fetchStations,
   fetchRouteInfo,
-  fetchInitialStationDataSouth,
-  fetchInitialStationDataNorth,
   receiveWayPoints,
   fetchRoutes,
   getCurrentEtas,
@@ -11,35 +9,41 @@ import {
   fetchRouteSchedules,
   fetchStationDepartures,
   createTrains,
-  updateTrains
+  updateTrains,
+  addTrains
 } from "../../actions/station_actions";
-import { fetchSpaceStation } from "../../actions/space_station_actions";
+import debounceRender from "react-debounce-render";
+
 import MainPage from "./main_page";
 
 const mapStateToProps = state => {
-  return {};
+  return {
+    routes: state.routes,
+    waypoints: state.waypoints,
+    allStations: state.stations
+  };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     fetchStations: () => dispatch(fetchStations()),
     fetchRoutes: () => dispatch(fetchRoutes()),
-    getCurrentEtas: () => dispatch(getCurrentEtas()),
+    getCurrentEtas: (routes, route) => dispatch(getCurrentEtas(routes, route)),
     fetchStationDepartures: abbr => dispatch(fetchStationDepartures(abbr)),
     fetchRouteStations: id => dispatch(fetchRouteStations(id)),
     fetchRouteSchedules: id => dispatch(fetchRouteSchedules(id)),
-    fetchRouteInfo: () => dispatch(fetchRouteInfo()),
+
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
-    fetchSpaceStation: () => dispatch(fetchSpaceStation()),
-    createTrains: route => dispatch(createTrains(route)),
+
+    createTrains: (route, etas) => dispatch(createTrains(route, etas)),
     updateTrains: route => dispatch(updateTrains(route)),
-    fetchInitialStationDataSouth: () =>
-      dispatch(fetchInitialStationDataSouth()),
-    fetchInitialStationDataNorth: () => dispatch(fetchInitialStationDataNorth())
+    addTrains: route => dispatch(addTrains(route))
   };
 };
 
+const DebouncedMain = debounceRender(MainPage);
+
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
-)(MainPage);
+)(DebouncedMain);
