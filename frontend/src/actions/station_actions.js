@@ -11,6 +11,8 @@ import {
 
   // getRouteInfo
 } from "../util/station_api_util";
+
+import recentEtasReducer from "../reducers/current_etas_reducer";
 import jsonObj from "../waypoints/all_shapes";
 export const RECEIVE_STATIONS = "RECEIVE_STATIONS";
 export const RECEIVE_INITIAL_SB_INFO = "RECEIVE_INITIAL_SB_INFO";
@@ -25,7 +27,7 @@ export const RECEIVE_STATION_ETA = "RECEIVE_STATION_ETA";
 export const CREATE_TRAINS = "CREATE_TRAINS";
 export const UPDATE_TRAINS = "UPDATE_TRAINS";
 export const ADD_TRAINS = "ADD_TRAINS";
-export const SAVE_TRAINS = "SAVE_TRAINS";
+export const REMOVE_TRAINS = "REMOVE_TRAINS";
 export const BUILD_WAY_POINTS = "BUILD_WAY_POINTS";
 
 const stationsSouthBound = [
@@ -176,14 +178,14 @@ export const receiveRoutes = routes => {
     routes: routes.data.root.routes.route
   };
 };
-export const receiveCurrentEtas = (etas, routes, route) => {
-  return {
-    type: RECEIVE_CURRENT_ETAS,
-    etas: etas.data.root.station,
-    routes,
-    route
-  };
-};
+// export const receiveCurrentEtas = (etas, routes, route) => {
+//   return {
+//     type: RECEIVE_CURRENT_ETAS,
+//     etas: etas.data.root.station,
+//     routes,
+//     route
+//   };
+// };
 export const receiveStationEta = (eta, abbr) => {
   return {
     type: RECEIVE_STATION_ETA,
@@ -227,9 +229,9 @@ export const addTrains = (route, etas) => ({
   route,
   etas
 });
-export const saveTrains = (trains, routeNum) => ({
-  type: SAVE_TRAINS,
-  trains,
+export const removeTrains = routeNum => ({
+  type: REMOVE_TRAINS,
+
   routeNum
 });
 export const buildWayPoints = routeNum => ({
@@ -250,10 +252,43 @@ export const receiveWayPoints = jsonObj => ({
   waypoints: jsonObj
 });
 
-export const getCurrentEtas = (routes, route) => dispatch =>
-  fetchCurrentEtas()
-    .then(etas => dispatch(receiveCurrentEtas(etas, routes, route)))
-    .catch(err => console.log(err));
+// export const getCurrentEtas = (routes, route) => dispatch =>
+//   fetchCurrentEtas()
+//     .then(etas => dispatch(receiveCurrentEtas(etas, routes, route)))
+//     .catch(err => console.log(err));
+
+export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
+  fetchCurrentEtas().then(etas2 =>
+    Promise.resolve().then(() => {
+      dispatch({
+        type: RECEIVE_CURRENT_ETAS,
+        etas: etas2.data.root.station,
+        routes,
+        route
+      });
+      const etas3 = getState().etas;
+      console.log(etas3);
+      return etas3;
+    })
+  );
+
+// function getCurrentEtas(routes, route) {
+//   return (dispatch) => {
+//     dispatch({ type: POST_LOADING });
+//     // Returning promise.
+//     return fetchCurrentEtas() // async http operation
+//       .then(response => {
+//         dispatch({ type: POST_SUCCESS, payload: response })
+//         // Returning response, to be able to handle it after dispatching async action.
+//         return response;
+//       })
+//       .catch(errorMessage => {
+//         dispatch({ type: POST_ERROR, payload: errorMessage })
+//         // Throwing an error, to be able handle errors later, in component.
+//         throw new Error(errorMessage)
+//       });
+//   }
+// }
 
 export const fetchStationDepartures = abbr => dispatch =>
   getStationDepartures(abbr)

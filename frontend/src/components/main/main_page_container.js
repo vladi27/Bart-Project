@@ -20,7 +20,8 @@ const mapStateToProps = state => {
   return {
     routes: state.routes,
     waypoints: state.waypoints,
-    allStations: state.stations
+    allStations: state.stations,
+    etas: state.etas
   };
 };
 
@@ -36,7 +37,8 @@ const mapDispatchToProps = dispatch => {
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
 
     createTrains: (route, etas) => dispatch(createTrains(route, etas)),
-    updateTrains: route => dispatch(updateTrains(route)),
+    updateTrains: (routeNum, etas, stations) =>
+      dispatch(updateTrains(routeNum, etas, stations)),
     addTrains: route => dispatch(addTrains(route))
   };
 };

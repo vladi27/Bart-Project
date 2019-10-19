@@ -15,12 +15,13 @@ import {
   createTrains,
   updateTrains,
   addTrains,
-  saveTrains
+  removeTrains
 } from "../../actions/station_actions";
 import updateCurrentTrains from "../../selectors/train_selectors";
 import combineTrainSelectors from "../../selectors/combine_train_selectors";
 import updateTrainPositions from "../../selectors/update_train_selector";
 import addNewTrains from "../../selectors/add_trains_selector";
+import createInitialPosition from "../../selectors/train_initial_selector";
 import indexOf from "lodash/indexOf";
 import findIndex from "lodash/findIndex";
 import debounceRender from "react-debounce-render";
@@ -98,12 +99,13 @@ const ROUTES = {
 
 const mapStateToProps = (state, props) => {
   return {
-    trains: state.trains[props.routeNumber],
+    trains: createInitialPosition(state, props),
     // newTrains: addNewTrains(state, props),
     route: state.routes[props.routeNumber],
     waypoints: state.waypoints[Number(props.routeNumber) - 1],
     allStations: state.stations,
     etas: state.etas,
+    initialEtas: props.etas,
     allTrains: state.trains
   };
 };
@@ -130,7 +132,7 @@ const mdp = dispatch => {
     updateTrains: (route, etas, stations) =>
       dispatch(updateTrains(route, etas, stations)),
     addTrains: route => dispatch(addTrains(route)),
-    saveTrains: (trains, routeNum) => dispatch(saveTrains(trains, routeNum))
+    removeTrains: routeNum => dispatch(removeTrains(routeNum))
   };
 };
 

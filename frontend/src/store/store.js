@@ -10,11 +10,7 @@ import {
 
 import rootReducer from "../reducers/root_reducer";
 
-const persistenceActionTypes = [
-  "ADD_TRAINS",
-  "RECEIVE_CURRENT_ETAS",
-  "RECEIVE_ROUTE_STATIONS"
-];
+const persistenceActionTypes = ["ADD_TRAINS", "RECEIVE_ROUTE_STATIONS"];
 
 const persistenceMiddleware = store => dispatch => action => {
   //const oldState = store.getState();
@@ -22,10 +18,11 @@ const persistenceMiddleware = store => dispatch => action => {
   const result = dispatch(action);
 
   if (persistenceActionTypes.includes(action.type)) {
-    if (action.type === "RECEIVE_CURRENT_ETAS") {
-      let newState = store.getState();
-      handleTrains(action, store, newState);
-    } else if (action.type === "RECEIVE_ROUTE_STATIONS") {
+    // if (action.type === "RECEIVE_CURRENT_ETAS") {
+    //   let newState = store.getState();
+    //   handleTrains(action, store, newState);
+    // }
+    if (action.type === "RECEIVE_ROUTE_STATIONS") {
       let newState = store.getState();
       handleWaypoints(action, store, newState);
     }
@@ -61,10 +58,11 @@ const handleTrains = (action, store, newState) => {
   if (action.routes === "create") {
     let route = allRoutes[action.route];
     store.dispatch(createTrains(route, allEtas));
-  } else if (action.routes === "update") {
-    let stations = allRoutes[action.route].stations;
-    store.dispatch(updateTrains(action.route, allEtas, stations));
   }
+  // } else if (action.routes === "update") {
+  //   let stations = allRoutes[action.route].stations;
+  //   store.dispatch(updateTrains(action.route, allEtas, stations));
+  // }
 };
 
 const configureStore = (preloadedState = {}) =>

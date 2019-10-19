@@ -119,6 +119,12 @@ class Route extends PureComponent {
     // this.state = { stations: this.props.selectedRoute.stations || [] };
   }
 
+  // tick() {
+  //   this.setState(prevState => ({
+  //     seconds: prevState.seconds + 1
+  //   }));
+  // }
+
   componentDidMount() {
     const waypoints4 = this.props.waypoints;
     const etas = this.props.etas;
@@ -129,7 +135,10 @@ class Route extends PureComponent {
 
     console.count();
     console.log(num);
-    this.props.getCurrentEtas("create", num);
+    // this.props.getCurrentEtas("create", num);
+    this.props.createTrains(route, this.props.initialEtas);
+    // this.props.renderStops();
+    // this.props.drawPolyline();
 
     // this.props.updateTrains(num);
     // this.setState(prev => ({
@@ -137,14 +146,14 @@ class Route extends PureComponent {
     // }));
 
     //  this.props.saveTrains(this.props.trains, num);
-    this.setState({ trains: this.props.trains });
+    this.setState({ trains: this.props.trains, etas: this.props.initialEtas });
 
-    // this.setState(() => {
-    //   let trains = this.props.trains || [];
-    //   trains.map(ele => {
-    //     return { [ele.id]: [] };
-    //   });
-    // });
+    this.setState(() => {
+      let trains = this.props.trains || [];
+      trains.map(ele => {
+        return { [ele.id]: null };
+      });
+    });
 
     // this.props.trains.map(train => {
     //   this.setState({ [train.id]: [] });
@@ -182,10 +191,11 @@ class Route extends PureComponent {
 
   componentWillUnmount() {
     const num = this.props.route.number;
+    this.props.removeTrains(num);
 
-    this.props.getCurrentEtas();
+    //this.props.getCurrentEtas();
 
-    clearInterval(this.intervalId3);
+    clearInterval(this.interval);
   }
 
   // static getDerivedStateFromProps(nextProps, prevState) {
@@ -301,12 +311,12 @@ class Route extends PureComponent {
     //   this.props.saveTrains(trains3, num);
     // }
 
-    if (prevProps.trains === undefined && this.props.trains) {
-      console.count();
-      this.props.trains.map(ele => {
-        this.setState({ [ele.id]: [] });
-      });
-    }
+    // if (prevProps.trains === undefined && this.props.trains) {
+    //   console.count();
+    //   this.props.trains.map(ele => {
+    //     this.setState({ [ele.id]: [] });
+    //   });
+    // }
 
     if (this.state.trains !== this.props.trains) {
       console.count(num);
@@ -332,13 +342,14 @@ class Route extends PureComponent {
     // if (this.props.etas !== prevProps.etas) {
     //   this.props.updateTrains(num, this.props.etas, stations);
     // }
-  }
 
-  //   if (this.state.trains !== this.props.trains) {
-  //     console.count();
-  //     return this.setState({ trains: this.props.trains });
-  //     // this.props.updateTrains(num);
-  //   }
+    if (this.state.etas !== this.props.etas && prevProps.etas) {
+      console.count();
+      //return this.setState({ trains: this.props.trains });
+      this.props.updateTrains(num, this.props.etas, this.props.route.stations);
+      this.setState({ etas: this.props.etas });
+    }
+  }
 
   //   // if (this.state.trainAdded !== null) {
   //   //   let idx = this.state.trainAdded;
@@ -445,9 +456,9 @@ class Route extends PureComponent {
       {
         return (
           <div>
-            {/* {this.renderStops()}
+            {/* {this.props.renderStops()}
 
-            {this.drawPolyline()} */}
+            {this.props.drawPolyline()} */}
 
             {trains.length > 0 ? (
               trains.map((train, idx) => {
@@ -476,6 +487,7 @@ class Route extends PureComponent {
                   // }
                   console.log(slice);
                   console.log(train);
+                  console.log(this.references);
 
                   return (
                     // <TrainMarkerContainer
@@ -494,6 +506,7 @@ class Route extends PureComponent {
                     // ></Marker>
                     <TrainContainer
                       markers={slice}
+                      seconds={this.props.seconds}
                       color={color}
                       station={train.stationName}
                       minutes={train.minutes}
@@ -504,6 +517,8 @@ class Route extends PureComponent {
                       index={train.stationIdx}
                       routeNumber={this.props.routeNumber}
                       train={train}
+                      initialCoordinates={train.initialCoordinates}
+                      initialPosition={train.initialPosition}
                       //ref={this.getOrCreateRef(id)}
                       references={this.references}
                       getOrCreateRef={this.getOrCreateRef}

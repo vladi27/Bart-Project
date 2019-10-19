@@ -92,7 +92,7 @@ const RouteColors = {
   Red: 7
 };
 
-class MainPage extends React.Component {
+class MainPage extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -105,8 +105,12 @@ class MainPage extends React.Component {
     // };
 
     this.state = {
-      currentSelections: []
+      currentSelections: [],
+      etas: {}
     };
+    this.renderStops = this.renderStops.bind(this);
+    this.drawPolyline = this.drawPolyline.bind(this);
+    this.interval = null;
   }
 
   componentDidMount() {
@@ -150,30 +154,41 @@ class MainPage extends React.Component {
     //   // });
     // }, 3000);
 
-    this.interval2 = setInterval(() => {
-      let current = this.state.currentSelections;
+    this.setState({ seconds: 0, fetchData: false, currentSelections: [] });
 
-      if (current && current.length > 0) {
-        current.map(ele => {
-          console.log(ele);
-          let route = ele.value;
-          let routes = "update";
-          console.log(route);
-          this.props.getCurrentEtas(routes, route);
-        });
-      }
-      // } else {
-      //   routeIds.map(id => {
-      //     let index = findIndex(current, function(o) {
-      //       return o.value == id;
-      //     });
-      //     if (index === -1) {
-      //       this.props.getCurrentEtas("create", id);
-      //     }
-      //   });
-      //   this.props.getCurrentEtas("create");
-      // }
-    }, 20000);
+    // this.interval2 = setInterval(() => {
+    //   let current = this.state.currentSelections;
+
+    //   // if (current && current.length > 0) {
+    //   //   current.map(ele => {
+    //   //     console.log(ele);
+    //   //     let route = ele.value;
+    //   //     let routes = "update";
+    //   //     console.log(route);
+    //   //     this.props.getCurrentEtas(routes, route).then(value => {
+    //   //       current.map(ele => {
+    //   //         return this.props.updateTrains(
+    //   //           ele.value,
+    //   //           value,
+    //   //           this.props.routes[ele.value].stations
+    //   //         );
+    //   //       });
+    //   //     });
+    //   //   });
+    //   this.props.getCurrentEtas();
+
+    //   // } else {
+    //   //   routeIds.map(id => {
+    //   //     let index = findIndex(current, function(o) {
+    //   //       return o.value == id;
+    //   //     });
+    //   //     if (index === -1) {
+    //   //       this.props.getCurrentEtas("create", id);
+    //   //     }
+    //   //   });
+    //   //   this.props.getCurrentEtas("create");
+    //   // }
+    // }, 20000);
 
     // this.interval2 = setInterval(() => {
     //   this.props.getCurrentEtas("update");
@@ -204,8 +219,38 @@ class MainPage extends React.Component {
   //   // this.props.receiveWayPoints(jsonObject);
   // }
 
+  componentDidUpdate(prevState) {
+    if (!this.state.currentSelections) {
+      console.count();
+      this.setState({ fetchData: false, seconds: 0 });
+      clearInterval(this.interval);
+      this.interval = null;
+    } else if (
+      !prevState.currentSelections &&
+      this.state.currentSelections.length > 0
+      // (prevState.currentSelections.length === 0 &&
+      //   this.state.currentSelections.length > 0)
+    ) {
+      console.count();
+      this.setState({ fetchData: true });
+      // this.interval = setInterval(() => {
+      //   console.count();
+      //   this.tick();
+      //   if (this.state.seconds % 30 === 0) {
+      //     this.props.getCurrentEtas();
+      //   }
+      // }, 10000);
+    }
+  }
+
   componentWillUnmount() {
-    clearInterval(this.interval2);
+    clearInterval(this.interval);
+  }
+
+  tick() {
+    this.setState(prevState => ({
+      seconds: prevState.seconds + 1
+    }));
   }
 
   renderStops() {
@@ -257,8 +302,10 @@ class MainPage extends React.Component {
 
     return routes2.map(route => {
       let hexcolor = route.hexcolor;
+      console.log(hexcolor);
       let waypoints3 = [this.props.waypoints[Number(route.number) - 1]];
       return waypoints3.map(ele => {
+        console.log(ele);
         return <Polyline positions={ele.waypoints} key={hexcolor} />;
       });
     });
@@ -274,10 +321,60 @@ class MainPage extends React.Component {
   //   return this.state.value;
   // }
 
+  handleTimer() {
+    this.props.getCurrentEtas().then(value => {
+      this.setState({ etas: value });
+    });
+    this.interval = setInterval(() => {
+      console.count();
+      this.tick();
+      if (this.state.seconds % 10 === 0) {
+        this.props.getCurrentEtas().then(value => {
+          this.setState(prev => {
+            if (prev.etas !== value) {
+              this.setState({ etas: value });
+            }
+          });
+        });
+      }
+    }, 1000);
+  }
+
+  stopTimer() {
+    clearInterval(this.interval);
+    this.interval = null;
+  }
+
   handleChange(value) {
-    this.setState(() => {
+    let difference = [];
+
+    // difference = this.state.currentSelections
+    //   .slice()
+    //   .filter(x => !value.includes(x)); // calculates diff
+    // console.log("Removed: ", difference);
+
+    console.log(value);
+
+    this.setState(prev => {
+      console.log(prev);
+      if (!prev.currentSelections || prev.currentSelections.length === 0) {
+        this.handleTimer();
+        return { currentSelections: value };
+      } else if (prev.currentSelections.length === 1 && !value) {
+        {
+          this.stopTimer();
+          return { currentSelections: value, seconds: 0 };
+        }
+      }
+
+      console.count();
       return { currentSelections: value };
     });
+
+    console.log(this.state);
+    // if (!this.state.currentSelections) {
+    //   return this.setState({ fetchData: false });
+    // }
   }
 
   // customFilter() {
@@ -418,7 +515,7 @@ class MainPage extends React.Component {
             />
           </div> */}
         <Map center={position} zoom={11} animate={true}>
-          {currentSelections
+          {currentSelections && Object.keys(this.state.etas).length > 0
             ? this.state.currentSelections.map((ele, idx) => {
                 let routeNumber = String(ele.value);
                 let id = "routeID -" + routeNumber;
@@ -434,7 +531,11 @@ class MainPage extends React.Component {
                     // waypoints={way2}
                     routeNumber={routeNumber}
                     currentColors={this.state}
+                    // drawPolyline={this.drawPolyline}
+                    // renderStops={this.renderStops}
                     key={id}
+                    etas={this.state.etas}
+                    seconds={this.state.seconds}
                   />
                 );
               })

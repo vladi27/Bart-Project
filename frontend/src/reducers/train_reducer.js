@@ -7,7 +7,7 @@ import {
   CREATE_TRAINS,
   UPDATE_TRAINS,
   ADD_TRAINS,
-  SAVE_TRAINS
+  REMOVE_TRAINS
 } from "../actions/station_actions";
 import findIndex from "lodash/findIndex";
 import find from "lodash/find";
@@ -181,7 +181,8 @@ const trainsReducer = (state = {}, action) => {
                     lastTrain: false,
                     stationIdx: idx,
                     id,
-                    pos: station.location
+                    pos: station.location,
+                    initialPosition: true
                   };
                   return newTrains.push(train);
                 } else if (minutes !== "Leaving" && prevStation) {
@@ -236,6 +237,7 @@ const trainsReducer = (state = {}, action) => {
                         stationName,
                         lastTrain,
                         stationIdx: idx,
+                        initialPosition: true,
                         id: id2,
                         pos: station.location
                       };
@@ -271,9 +273,9 @@ const trainsReducer = (state = {}, action) => {
 
       return merge({}, state, { [route.number]: trains3 });
 
-    case SAVE_TRAINS:
+    case REMOVE_TRAINS:
       const routeNum4 = action.routeNum;
-      const allUpdatedTrains = action.trains;
+      const allUpdatedTrains = [];
       const curTrains = state[routeNum4];
       // curTrains = Object.assign({}, allUpdatedTrains);
 
@@ -477,50 +479,12 @@ const trainsReducer = (state = {}, action) => {
         });
         console.log(currentDepartures);
         console.log(lastMinutes);
-        // if (index === -1 && lastMinutes === "Leaving") {
-        //   let index2 = findIndex(nextStationEstimates, function(o) {
-        //     return (
-        //       o.abbreviation === trainDestination && o.hexcolor === hexcolor
-        //     );
-        //   });
-        //   console.log(lastStation);
 
-        //   console.log(nextStationName);
-        //   console.log(nextStationEstimates);
-
-        //   console.log(index2);
-
-        //   if (index2 > -1) {
-        //     let lastTrain = false;
-
-        //     if (train.stationIdx + 1 === stationLength) {
-        //       lastTrain = true;
-        //     }
-        //     let newObj = {
-        //       stationName: nextStationName,
-        //       stationIdx: train.stationIdx + 1,
-        //       minutes: nextStationEstimates[index2].estimate[0].minutes,
-        //       departures: nextStationEstimates[index2].estimate[0],
-        //       lastTrain
-        //     };
-        //     console.log(newObj);
-
-        //     let updatedTrain = Object.assign({}, train, newObj);
-        //     return updatedTrains.push(updatedTrain);
-        //   }
-        // }
         if (currentDepartures !== undefined) {
           let currentMinutes = currentDepartures.estimate[0].minutes;
           let currentDirection = currentDepartures.estimate[0].direction;
           let currentHexcolor = currentDepartures.estimate[0].hexcolor;
-
-          if (currentMinutes === lastMinutes) {
-            let updatedTrain = Object.assign({}, train);
-            return updatedTrains.push(updatedTrain);
-          } else if (
-            lastMinutes === "Leaving" &&
-            currentMinutes !== "Leaving"
-          ) {
+          if (lastMinutes === "Leaving" && currentMinutes !== "Leaving") {
             let nextDepartures = find(nextStationEstimates, {
               abbreviation: trainDestination,
               hexcolor: hexcolor,
@@ -538,7 +502,8 @@ const trainsReducer = (state = {}, action) => {
                 minutes: nextDepartures.estimate[0].minutes,
                 //departures: nextStationEstimates[index3].estimate[0],
                 lastTrain,
-                pos: stations[train.stationIdx + 1].location
+                pos: stations[train.stationIdx + 1].location,
+                initialPosition: false
               };
               console.log(newObj);
 
@@ -552,11 +517,18 @@ const trainsReducer = (state = {}, action) => {
             Number(currentMinutes) < Number(lastMinutes)
           ) {
             let updObj = {
-              minutes: currentMinutes
+              minutes: currentMinutes,
+              initialPosition: false
               //departures: currentStationEstimates[index].estimate[0]
             };
 
             let updatedTrain = Object.assign({}, train, updObj);
+            console.log(updatedTrain);
+            return updatedTrains.push(updatedTrain);
+          } else {
+            let updatedTrain = Object.assign({}, train, {
+              initialPosition: false
+            });
             console.log(updatedTrain);
             return updatedTrains.push(updatedTrain);
           }
@@ -581,7 +553,8 @@ const trainsReducer = (state = {}, action) => {
               minutes: nextDepartures.estimate[0].minutes,
               pos: stations[train.stationIdx + 1].location,
               //departures: nextStationEstimates[index3].estimate[0],
-              lastTrain
+              lastTrain,
+              initialPosition: false
             };
             console.log(newObj);
 
