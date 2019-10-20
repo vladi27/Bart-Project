@@ -169,13 +169,13 @@ const trainsReducer = (state = {}, action) => {
               let hexcolor = closestDeparture.hexcolor;
               let direction = closestDeparture.direction;
 
-              if (direction === routeDirection) {
+              {
                 if (minutes === "Leaving" && idx !== routeStations.length - 1) {
                   let id = uuidv4();
                   let train = {
                     dest,
                     hexcolor,
-                    direction,
+                    direction: routeDirection,
                     minutes,
                     stationName,
                     lastTrain: false,
@@ -232,7 +232,7 @@ const trainsReducer = (state = {}, action) => {
                       let train = {
                         dest,
                         hexcolor,
-                        direction,
+                        direction: routeDirection,
                         minutes,
                         stationName,
                         lastTrain,
@@ -457,7 +457,7 @@ const trainsReducer = (state = {}, action) => {
       let stationLength = stations.length - 1;
       const updatedTrains = [];
 
-      allTrains.map(train => {
+      allTrains.map((train, idx) => {
         console.log(train);
         let lastMinutes = train.minutes;
         let trainDestination = train.dest;
@@ -474,42 +474,40 @@ const trainsReducer = (state = {}, action) => {
         let currentStationEstimates = etas[lastStation].etd;
         let currentDepartures = find(currentStationEstimates, {
           abbreviation: trainDestination,
-          hexcolor: hexcolor,
-          direction: direction
+          hexcolor: hexcolor
         });
         console.log(currentDepartures);
         console.log(lastMinutes);
 
-        if (currentDepartures !== undefined) {
+        if (currentDepartures) {
           let currentMinutes = currentDepartures.estimate[0].minutes;
           let currentDirection = currentDepartures.estimate[0].direction;
           let currentHexcolor = currentDepartures.estimate[0].hexcolor;
           if (lastMinutes === "Leaving" && currentMinutes !== "Leaving") {
             let nextDepartures = find(nextStationEstimates, {
               abbreviation: trainDestination,
-              hexcolor: hexcolor,
-              direction: direction
+              hexcolor: hexcolor
             });
 
-            if (nextDepartures) {
-              let lastTrain = false;
-              if (train.stationIdx + 1 === stationLength) {
-                lastTrain = true;
-              }
-              let newObj = {
-                stationName: nextStationName,
-                stationIdx: train.stationIdx + 1,
-                minutes: nextDepartures.estimate[0].minutes,
-                //departures: nextStationEstimates[index3].estimate[0],
-                lastTrain,
-                pos: stations[train.stationIdx + 1].location,
-                initialPosition: false
-              };
-              console.log(newObj);
+            console.log(nextDepartures, train);
 
-              let updatedTrain = Object.assign({}, train, newObj);
-              return updatedTrains.push(updatedTrain);
+            let lastTrain = false;
+            if (train.stationIdx + 1 === stationLength) {
+              lastTrain = true;
             }
+            let newObj = {
+              stationName: nextStationName,
+              stationIdx: train.stationIdx + 1,
+              minutes: nextDepartures.estimate[0].minutes,
+              //departures: nextStationEstimates[index3].estimate[0],
+              lastTrain,
+              pos: stations[train.stationIdx + 1].location,
+              initialPosition: false
+            };
+            console.log(newObj);
+
+            let updatedTrain = Object.assign({}, train, newObj);
+            return updatedTrains.push(updatedTrain);
           } else if (
             (currentMinutes === "Leaving" &&
               lastMinutes !== "Leaving" &&
@@ -538,8 +536,7 @@ const trainsReducer = (state = {}, action) => {
         ) {
           let nextDepartures = find(nextStationEstimates, {
             abbreviation: trainDestination,
-            hexcolor: hexcolor,
-            direction: direction
+            hexcolor: hexcolor
           });
 
           if (nextDepartures) {

@@ -47,26 +47,94 @@ class TrainContainer extends PureComponent {
     console.log(snapshot);
     console.count();
 
-    if (this.props.minutes !== this.state.minutes) {
+    if (
+      this.props.minutes !== this.state.minutes &&
+      this.state.minutes === "Leaving" &&
+      this.state.station !== this.props.station
+    ) {
       let station = this.props.routeStations[this.props.index].slice;
+      console.log(
+        this.props.minutes,
+        this.state.minutes,
+        this.props.station,
+        this.state.station
+      );
       console.count();
-      this.setState({ minutes: this.props.minutes });
+      this.setState({
+        minutes: this.props.minutes,
+        end: Number(this.props.minutes) * 60 * 1000,
+        station: this.props.station
+      });
+
+      // this.touched(now, ref);
+
+      console.log(
+        this.props.currentSlice,
+        this.props.station,
+        this.props.minutes
+      );
+
+      // this.time["start"] = performance.now();
+      this.time["start"] = performance.now();
+      setTimeout(() => {
+        let now = performance.now();
+        this.touched(now);
+      }, this.state.interval);
+
+      // let now = performance.now();
+      // this.touched(now);
+
       // this.touched(this.props.pos, this.state.minutes, station);
+    } else if (
+      this.props.minutes !== this.state.minutes &&
+      this.state.minutes !== "Leaving" &&
+      this.props.minutes === "Leaving" &&
+      this.state.station === this.props.station
+    ) {
+      console.log(this.props.minutes, this.state.minutes, this.props.station);
+      console.count();
+      window.cancelAnimationFrame(this.touched());
+      this.setState({
+        minutes: this.props.minutes,
+        end: null,
+        interval: this.props.currentSlice.interval,
+        //  markers: this.props.currentSlice.shift(),
+        currentSlice: this.props.currentSlice.currentSlice
+      });
+
+      //this.time.start = null;
+      this.time.elapsed = null;
+    } else if (this.props.minutes !== this.state.minutes) {
+      let diff =
+        (Number(this.props.minutes) - Number(this.state.minutes)) * 1000 * 60;
+      let timeLeftToCover = this.time.end - this.time.elapsed;
+      console.log(
+        diff,
+        this.time.elapsed,
+        this.state.station,
+        this.props.minutes
+      );
+      // waypoints per second = this.state.
+      this.setState({ minutes: this.props.minutes });
     }
   }
 
-  touched(now, slice) {
-    console.log(slice, this.props.station);
-    if (this.state.end) {
-      console.log(slice, this.props.station);
-      let newSlice = slice.slice();
+  touched(now, interval) {
+    console.log(this.state.currentSlice, this.props.station);
+    console.log(this.time, this.props.station);
+    if (this.state.end && this.state.currentSlice.length > 0) {
+      console.log(this.state.currentSlice, this.props.station);
+      let newSlice = this.state.currentSlice;
       console.count();
       requestAnimationFrame(() => {
         this.time.elapsed = now - this.time.start;
+        console.log(this.time.start, this.props.station);
+        console.log(this.time.elapsed, this.props.station);
         const progress = this.time.elapsed / this.state.end;
-        const position = newSlice.shift();
+        const position = this.state.currentSlice.shift();
+        console.log(this.state.currentSlice, this.props.station);
         console.log(position);
-        console.log(progress);
+        console.log(progress, this.state.station, newSlice, this.state.minutes);
         // this.ref.current.leafletElement.options.position = position;
         this.setState({ markers: position });
 
@@ -81,13 +149,13 @@ class TrainContainer extends PureComponent {
         //   this.setState({ stateToDisplay: !this.state.stateToDisplay })
         // }
 
-        if (progress < 1 && newSlice.length > 0) {
+        if (progress < 1 && this.state.currentSlice.length > 0) {
           let now2 = performance.now();
           console.log(newSlice);
           console.count();
           setTimeout(() => {
-            this.touched(now2, newSlice);
-          }, 2000);
+            this.touched(now2, this.state.currentSlice);
+          }, this.state.interval);
         }
       });
     }
@@ -142,6 +210,10 @@ class TrainContainer extends PureComponent {
     //   return { markers: prev.markers };
     // });
 
+    console.log(this.props);
+
+    const interval = this.props.interval;
+
     this.setState({
       markers: this.props.initialCoordinates,
       // ratio: this.props.ratio,
@@ -149,6 +221,7 @@ class TrainContainer extends PureComponent {
       minutes: this.props.minutes,
       start: performance.now(),
       end: end,
+      interval: this.props.interval,
       currentSlice: this.props.currentSlice
     });
 
@@ -164,9 +237,12 @@ class TrainContainer extends PureComponent {
       this.props.minutes
     );
 
-    setTimeout(() => {
-      this.touched(now, this.state.currentSlice);
-    }, 200);
+    if (this.props.minutes !== "Leaving") {
+      setTimeout(() => {
+        console.count();
+        this.touched(now);
+      }, this.props.interval);
+    }
 
     // console.log(this.props.station);
     console.count();
@@ -204,6 +280,7 @@ class TrainContainer extends PureComponent {
     console.log(this.state);
     console.log(this.time.start, this.props.station);
     console.log(this.props.minutes, this.state.interval, this.props.station);
+    console.log(this.time, this.state.station, this.state.minutes);
     // console.log(this.props.id);
     // const id = uuidv4();
 
@@ -230,7 +307,7 @@ class TrainContainer extends PureComponent {
             key={id}
             ref={ref}
             // time in ms that marker will take to reach its destination
-            duration={5000}
+            duration={this.state.interval}
             icon={iconTrain}
             // style={{ backgroundColor: `${color}` }}
           >

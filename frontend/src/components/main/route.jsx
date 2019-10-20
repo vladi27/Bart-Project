@@ -136,7 +136,7 @@ class Route extends PureComponent {
     console.count();
     console.log(num);
     // this.props.getCurrentEtas("create", num);
-    this.props.createTrains(route, this.props.initialEtas);
+    this.props.createTrains(route, this.props.etas);
     // this.props.renderStops();
     // this.props.drawPolyline();
 
@@ -146,7 +146,7 @@ class Route extends PureComponent {
     // }));
 
     //  this.props.saveTrains(this.props.trains, num);
-    this.setState({ trains: this.props.trains, etas: this.props.initialEtas });
+    this.setState({ trains: this.props.trains });
 
     this.setState(() => {
       let trains = this.props.trains || [];
@@ -299,6 +299,7 @@ class Route extends PureComponent {
     // const allTrains = this.props.trains.slice();
     const num = this.props.route.number;
     const stations = this.props.route.stations;
+    const etas = this.props.etas;
 
     // if (this.state.trains !== prevState.trains && prevState.trains !== null) {
     //   console.count();
@@ -343,11 +344,11 @@ class Route extends PureComponent {
     //   this.props.updateTrains(num, this.props.etas, stations);
     // }
 
-    if (this.state.etas !== this.props.etas && prevProps.etas) {
+    if (prevProps.etas !== this.props.etas && prevProps.etas) {
       console.count();
       //return this.setState({ trains: this.props.trains });
-      this.props.updateTrains(num, this.props.etas, this.props.route.stations);
-      this.setState({ etas: this.props.etas });
+      this.props.updateTrains(num, etas, stations);
+      //this.setState({ etas: this.props.etas });
     }
   }
 
@@ -517,6 +518,7 @@ class Route extends PureComponent {
                       index={train.stationIdx}
                       routeNumber={this.props.routeNumber}
                       train={train}
+                      interval={train.interval}
                       initialCoordinates={train.initialCoordinates}
                       initialPosition={train.initialPosition}
                       //ref={this.getOrCreateRef(id)}

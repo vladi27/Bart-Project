@@ -104,8 +104,8 @@ const mapStateToProps = (state, props) => {
     route: state.routes[props.routeNumber],
     waypoints: state.waypoints[Number(props.routeNumber) - 1],
     allStations: state.stations,
-    etas: state.etas,
-    initialEtas: props.etas,
+    etas: props.etas,
+    //initialEtas: props.etas,
     allTrains: state.trains
   };
 };

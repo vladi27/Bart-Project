@@ -328,7 +328,7 @@ class MainPage extends PureComponent {
     this.interval = setInterval(() => {
       console.count();
       this.tick();
-      if (this.state.seconds % 10 === 0) {
+      if (this.state.seconds % 2 === 0) {
         this.props.getCurrentEtas().then(value => {
           this.setState(prev => {
             if (prev.etas !== value) {
@@ -337,7 +337,7 @@ class MainPage extends PureComponent {
           });
         });
       }
-    }, 1000);
+    }, 15000);
   }
 
   stopTimer() {

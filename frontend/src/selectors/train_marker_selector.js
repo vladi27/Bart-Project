@@ -72,7 +72,25 @@ const getPosition = createCachedSelector(
       console.log(slice, index, initialCoordinates);
       let currentSlice = slice.slice(index + 1);
 
+      // if (currentSlice.length < 3) {
+      //   currentSlice = slice.slice(Math.round(slice.length / 2));
+      // }
+
+      console.log(currentSlice, train);
+
       return currentSlice;
+    } else if (initialPosition && minutes === "Leaving") {
+      let currentSlice = stations[trainIndex].slice.slice();
+
+      return currentSlice;
+    }
+    if (!initialPosition && minutes === "Leaving") {
+      let currentSlice = stations[trainIndex].slice.slice();
+      let timeToStation = schedules[stationName].timeToNextStation;
+      let interval = Math.round(
+        ((Number(timeToStation) * 60) / currentSlice.length) * 1000
+      );
+      return { currentSlice, interval };
     }
 
     // if (minutes === "Leaving") {

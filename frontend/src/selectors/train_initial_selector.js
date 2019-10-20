@@ -28,76 +28,33 @@ const createInitialPosition = createCachedSelector(
         let minutes = train.minutes;
 
         if (train.initialPosition) {
-          if (minutes === "Leaving") {
-            let stationSlice = stations[train.stationIdx].slice;
+          if (minutes === "Leaving" && !train.lastTrain) {
+            let stationSlice = stations[train.stationIdx].slice.slice();
             let initialCoordinates = stationSlice[0];
-            let obj = { initialCoordinates };
+            let initialSlice = stationSlice.slice(1);
+            console.log(train.stationName, schedules[train.stationName]);
+            console.log(train.stationName, initialSlice);
+
+            let timeToStation = schedules[train.stationName].timeToNextStation;
+            let interval = Math.round(
+              ((Number(timeToStation) * 60) / stationSlice.length) * 1000
+            );
+            let obj = {
+              initialCoordinates,
+              interval
+            };
             let newTrain = Object.assign({}, train, obj);
+            console.log(newTrain);
             return newTrain;
-            // let timeToStation;
-            // if (schedules[train.station]) {
-            //     timeToStation = schedules[train.station].timeToNextStation;
-            // } else {
-            //     timeToStation = 5;
-            // }
-            // let diff = stationSlice.length - Number(timeToStation) * 60;
-            // console.log(diff);
-            // if (diff > 0) {
-            //     let ratio = Math.round(
-            //         (stationSlice.length / Number(timeToStation)) * 60
-            //     );
-
-            //     if (ratio > 1) {
-            //         let selectIndex = ratio;
-            //         let delay = null;
-
-            //         let obj = { selectIndex, delay, allMarkers: stationSlice };
-            //         let newTrain = Object.assign({}, train, obj);
-            //         return newTrain;
-            //     } else {
-            //         let selectIndex = null;
-            //         let delay = null;
-
-            //         let obj = { selectIndex, delay, allMarkers: stationSlice };
-            //         let newTrain = Object.assign({}, train, obj);
-            //         return newTrain;
-            //     }
-            // } else if (diff < 0) {
-            //     let ratio = Math.round(
-            //         (Number(timeToStation) * 60) / stationSlice.length
-            //     );
-
-            //     if (ratio > 1) {
-            //         let selectIndex = null;
-            //         let delay = ratio;
-
-            //         let obj = { selectIndex, delay, allMarkers: stationSlice };
-            //         let newTrain = Object.assign({}, train, obj);
-            //         return newTrain;
-            //     } else {
-            //         let selectIndex = null;
-            //         let delay = null;
-
-            //         let obj = { selectIndex, delay, allMarkers: stationSlice };
-            //         let newTrain = Object.assign({}, train, obj);
-            //         return newTrain;
-            //     }
-            // } else {
-            //     let selectIndex = null;
-            //     let delay = null;
-
-            //     let obj = { selectIndex, delay, allMarkers: stationSlice };
-            //     let newTrain = Object.assign({}, train, obj);
-            //     return newTrain;
-            // }
           } else if (minutes !== "Leaving") {
             let prevStation = stations[train.stationIdx - 1].stationName;
 
             let timeToStation = schedules[prevStation].timeToNextStation;
-            let ratio = Math.round(Number(minutes) / timeToStation);
-            console.log(ratio);
-            let stationSlice = stations[train.stationIdx - 1].slice;
-            let newSlice;
+            console.log(timeToStation, train);
+            let ratio = Number(minutes) / timeToStation;
+            console.log(ratio, train);
+            let stationSlice = stations[train.stationIdx - 1].slice.slice();
+            let newSlice = [];
             let newRatio;
             let slice1 = stationSlice.slice(1);
             let slice2 = stationSlice.slice(
@@ -108,8 +65,12 @@ const createInitialPosition = createCachedSelector(
               Math.round(stationSlice.length / 2)
             );
             let slice4 = stationSlice.slice(
-              Math.round(stationSlice.length - stationSlice.length / 4) + 1
+              Math.round(stationSlice.length - stationSlice.length / 4)
             );
+
+            if (slice4.length < 3) {
+              slice4 = Math.round(stationSlice.length / 2);
+            }
 
             if (inRange(ratio, { start: 0, end: 0.25 })) {
               newSlice = slice1;
@@ -126,12 +87,22 @@ const createInitialPosition = createCachedSelector(
             } else {
               newSlice = slice2;
             }
-            let initialCoordinates = newSlice[0];
 
-            let obj = {
-              initialCoordinates
-            };
+            let len = newSlice.slice().length;
+            let interval = Math.round(((Number(minutes) * 60) / len) * 1000);
+            console.log(train, newSlice);
+            let initialCoordinates = newSlice[0];
+            //   let initialSlice = newSlice;
+            let obj = Object.assign(
+              {},
+              {
+                initialCoordinates,
+                interval
+              }
+            );
+
             let newTrain = Object.assign({}, train, obj);
+            console.log(newTrain);
             return newTrain;
           }
         } else {
