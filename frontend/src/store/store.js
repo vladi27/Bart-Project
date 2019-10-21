@@ -10,7 +10,11 @@ import {
 
 import rootReducer from "../reducers/root_reducer";
 
-const persistenceActionTypes = ["ADD_TRAINS", "RECEIVE_ROUTE_STATIONS"];
+const persistenceActionTypes = [
+  "ADD_TRAINS",
+  "RECEIVE_ROUTE_STATIONS",
+  "UPDATE_TRAINS"
+];
 
 const persistenceMiddleware = store => dispatch => action => {
   //const oldState = store.getState();
@@ -18,13 +22,18 @@ const persistenceMiddleware = store => dispatch => action => {
   const result = dispatch(action);
 
   if (persistenceActionTypes.includes(action.type)) {
-    // if (action.type === "RECEIVE_CURRENT_ETAS") {
-    //   let newState = store.getState();
-    //   handleTrains(action, store, newState);
-    // }
+    if (action.type === "RECEIVE_CURRENT_ETAS") {
+      let newState = store.getState();
+      handleTrains(action, store, newState);
+    }
     if (action.type === "RECEIVE_ROUTE_STATIONS") {
       let newState = store.getState();
       handleWaypoints(action, store, newState);
+    }
+    if (action.type === "UPDATE_TRAINS") {
+      console.count();
+      let newState = store.getState();
+      handleNewTrains(action, store, newState);
     }
   }
   return result;
@@ -35,6 +44,14 @@ const handleWaypoints = (action, store, newState) => {
   const routeNum2 = store.getState().routes[action.stations.number];
   const num3 = routeNum2.number;
   store.dispatch(buildWayPoints(num3));
+};
+const handleNewTrains = (action, store, newState) => {
+  console.log(action);
+  const routeNum3 = store.getState().routes[action.routeNum];
+  const trains = store.getState().trains[action.routeNum];
+  const etas = store.getState().etas;
+
+  store.dispatch(addTrains(routeNum3, trains, etas));
 };
 
 const updateRoute = (action, store, newState) => {

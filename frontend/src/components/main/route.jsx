@@ -300,6 +300,7 @@ class Route extends PureComponent {
     const num = this.props.route.number;
     const stations = this.props.route.stations;
     const etas = this.props.etas;
+    const route = this.props.route;
 
     // if (this.state.trains !== prevState.trains && prevState.trains !== null) {
     //   console.count();
@@ -326,6 +327,14 @@ class Route extends PureComponent {
 
       this.setState({ trains: this.props.trains });
     }
+
+    // if (
+    //   prevState.trains &&
+    //   this.state.trains &&
+    //   prevState.trains !== this.state.trains
+    // ) {
+    //   this.props.addTrains(route, this.state.trains, this.props.etas);
+    // }
 
     // if (
     //   this.state.trains === prevProps.trains &&
@@ -524,6 +533,7 @@ class Route extends PureComponent {
                       //ref={this.getOrCreateRef(id)}
                       references={this.references}
                       getOrCreateRef={this.getOrCreateRef}
+                      initialSlice={train.initialSlice}
                       //lastLocation={this.state[id]}
                       handleChange={this.handleChange}
                       // lastLocation={lastLocation}

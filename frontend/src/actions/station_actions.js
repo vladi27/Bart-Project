@@ -224,9 +224,10 @@ export const createTrains = (route, etas, sub) => ({
   etas,
   sub
 });
-export const addTrains = (route, etas) => ({
+export const addTrains = (route, trains, etas) => ({
   type: ADD_TRAINS,
   route,
+  trains,
   etas
 });
 export const removeTrains = routeNum => ({

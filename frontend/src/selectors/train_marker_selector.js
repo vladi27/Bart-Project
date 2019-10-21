@@ -88,7 +88,7 @@ const getPosition = createCachedSelector(
       let currentSlice = stations[trainIndex].slice.slice();
       let timeToStation = schedules[stationName].timeToNextStation;
       let interval = Math.round(
-        ((Number(timeToStation) * 60) / currentSlice.length) * 1000
+        (Number(timeToStation) * 60 * 1000) / (currentSlice.length - 1)
       );
       return { currentSlice, interval };
     }

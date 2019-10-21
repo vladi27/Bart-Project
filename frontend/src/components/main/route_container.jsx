@@ -131,7 +131,8 @@ const mdp = dispatch => {
     createTrains: (route, etas) => dispatch(createTrains(route, etas)),
     updateTrains: (route, etas, stations) =>
       dispatch(updateTrains(route, etas, stations)),
-    addTrains: route => dispatch(addTrains(route)),
+    addTrains: (route, trains, etas) =>
+      dispatch(addTrains(route, trains, etas)),
     removeTrains: routeNum => dispatch(removeTrains(routeNum))
   };
 };
