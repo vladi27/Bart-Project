@@ -15,7 +15,8 @@ import {
   createTrains,
   updateTrains,
   addTrains,
-  removeTrains
+  removeTrains,
+  removeTrain
 } from "../../actions/station_actions";
 import updateCurrentTrains from "../../selectors/train_selectors";
 import combineTrainSelectors from "../../selectors/combine_train_selectors";
@@ -133,7 +134,8 @@ const mdp = dispatch => {
       dispatch(updateTrains(route, etas, stations)),
     addTrains: (route, trains, etas) =>
       dispatch(addTrains(route, trains, etas)),
-    removeTrains: routeNum => dispatch(removeTrains(routeNum))
+    removeTrains: routeNum => dispatch(removeTrains(routeNum)),
+    removeTrain: (routeNum, id) => dispatch(removeTrain(routeNum, id))
   };
 };
 

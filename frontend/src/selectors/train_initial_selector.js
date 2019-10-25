@@ -24,6 +24,7 @@ const createInitialPosition = createCachedSelector(
   (trains, etas, waypoints, stations, schedules) => {
     console.log(trains);
     if (trains) {
+      const results = [];
       const newT = trains.map(train => {
         let minutes = train.minutes;
 
@@ -46,7 +47,7 @@ const createInitialPosition = createCachedSelector(
             };
             let newTrain = Object.assign({}, train, obj);
             console.log(newTrain);
-            return newTrain;
+            results.push(newTrain);
           } else if (minutes !== "Leaving") {
             let prevStation = stations[train.stationIdx - 1].stationName;
 
@@ -112,13 +113,13 @@ const createInitialPosition = createCachedSelector(
 
             let newTrain = Object.assign({}, train, obj);
             console.log(newTrain);
-            return newTrain;
+            results.push(newTrain);
           }
         } else {
-          return train;
+          results.push(train);
         }
       });
-      return newT;
+      return results;
     }
   }
 )((state, props) => props.routeNumber);

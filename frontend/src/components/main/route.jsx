@@ -534,6 +534,7 @@ class Route extends PureComponent {
                       references={this.references}
                       getOrCreateRef={this.getOrCreateRef}
                       initialSlice={train.initialSlice}
+                      removeTrain={this.props.removeTrain}
                       //lastLocation={this.state[id]}
                       handleChange={this.handleChange}
                       // lastLocation={lastLocation}

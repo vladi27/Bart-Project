@@ -132,7 +132,17 @@ const routesReducer = (state = {}, action) => {
         return obj;
       });
 
-      route["stations"] = abc2;
+      let abc3;
+
+      if (num === "2") {
+        abc3 = abc2.slice(0, -3);
+      } else if (num === "1") {
+        abc3 = abc2.slice(2, -2);
+      } else {
+        abc3 = abc2.slice(0, -1);
+      }
+
+      route["stations"] = abc3;
 
       const updateRoute = { [route.number]: route };
 

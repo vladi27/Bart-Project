@@ -7,7 +7,8 @@ import {
   CREATE_TRAINS,
   UPDATE_TRAINS,
   ADD_TRAINS,
-  REMOVE_TRAINS
+  REMOVE_TRAINS,
+  REMOVE_TRAIN
 } from "../actions/station_actions";
 import findIndex from "lodash/findIndex";
 import find from "lodash/find";
@@ -96,7 +97,7 @@ const trainsReducer = (state = {}, action) => {
       const routeDestination = ROUTES[route.number].abbreviation;
       const routeDirection = ROUTES[route.number].direction;
       const routeHexcolor = route.hexcolor;
-      let routeStations = [];
+      let routeStations = route.stations;
       let currentTrains = [];
 
       let sub = action.sub;
@@ -144,13 +145,13 @@ const trainsReducer = (state = {}, action) => {
       //     }
       //   } else {
 
-      if (route.number === "2") {
-        routeStations = route.stations.slice(0, -3);
-      } else if (route.number === "1") {
-        routeStations = route.stations.slice(0, -2);
-      } else {
-        routeStations = route.stations.slice(0, -1);
-      }
+      // if (route.number === "2") {
+      //   routeStations = route.stations.slice(0, -3);
+      // } else if (route.number === "1") {
+      //   routeStations = route.stations.slice(2, -2);
+      // } else {
+      //   routeStations = route.stations.slice(0, -1);
+      // }
 
       console.log(routeStations);
       console.log(currentEtas);
@@ -284,6 +285,23 @@ const trainsReducer = (state = {}, action) => {
       // const newTrainsforRoute = { [routeNum4]: curTrains };
 
       return { ...state, [routeNum4]: allUpdatedTrains };
+    case REMOVE_TRAIN:
+      const routeNum5 = action.routeNum;
+      const id = action.id;
+      const curTrains2 = state[routeNum5].slice();
+      const index = findIndex(currentTrains2, function(o) {
+        return id === o.id;
+      });
+
+      curTrains2.splice(index, 1);
+
+      return { ...state, [routeNum5]: curTrains2 };
+
+      // curTrains = Object.assign({}, allUpdatedTrains);
+
+      // const newTrainsforRoute = { [routeNum4]: curTrains };
+
+      return { ...state, [routeNum4]: allUpdatedTrains };
 
     case ADD_TRAINS:
       const currentRoute = action.route;
@@ -291,12 +309,12 @@ const trainsReducer = (state = {}, action) => {
       const currentEtas2 = action.etas;
       const currentRouteDirection = ROUTES[currentRoute.number].direction;
       const currentTrains2 = action.trains.slice();
-      const currentStations = currentRoute.stations;
+      let currentStations = currentRoute.stations;
       const routeDestination2 = ROUTES[currentRoute.number].abbreviation;
       let currentStationsSlice = [];
       const newTrain5 = [];
 
-      {
+      if (currentTrains2.length > 0) {
         const firstTrain = currentTrains2[0];
         let firstMinutes = firstTrain.minutes;
         let firstTrainDestination = firstTrain.dest;
@@ -310,6 +328,10 @@ const trainsReducer = (state = {}, action) => {
             o.hexcolor === firstHexcolor
           );
         });
+
+        // if (currentRoute.number === "1") {
+        //   currentStations = currentStationsSlice.slice(2);
+        // }
 
         console.log(index);
 
@@ -340,8 +362,12 @@ const trainsReducer = (state = {}, action) => {
           if (currentStationsSlice.length > 0) {
             currentStationsSlice.map((station, idx4) => {
               console.log(station);
+              let currents = currentEtas2[stationName2];
               let stationName2 = station.stationName;
-              let departures = currentEtas2[stationName2].etd;
+              let departures = [];
+              if (currents) {
+                departures = currents["etd"];
+              }
               let previousStation = currentStationsSlice[idx4 - 1];
 
               departures.map(departure => {
@@ -446,23 +472,27 @@ const trainsReducer = (state = {}, action) => {
           }
         });
 
-        const updRoute = { [currentRoute.number]: newTrains4 };
+        const newTrains6 = uniqBy(newTrains4, "stationName");
+
+        const updRoute = { [currentRoute.number]: newTrains6 };
         return merge({}, state, updRoute);
       }
+
       return merge({}, state);
 
     case UPDATE_TRAINS:
       const etas = action.etas;
 
       let allTrains = state[action.routeNum].slice();
-      let stations;
-      if (action.routeNum === "2") {
-        stations = action.stations.slice(0, -3);
-      } else if (action.routeNum === "1") {
-        stations = action.stations.slice(0, -2);
-      } else {
-        stations = action.stations.slice(0, -1);
-      }
+
+      let stations = action.stations;
+      // if (action.routeNum === "2") {
+      //   stations = action.stations.slice(0, -3);
+      // } else if (action.routeNum === "1") {
+      //   stations = action.stations.slice(2, -2);
+      // } else {
+      //   stations = action.stations.slice(0, -1);
+      // }
       let stationLength = stations.length - 1;
       const updatedTrains = [];
 
@@ -519,8 +549,7 @@ const trainsReducer = (state = {}, action) => {
             return updatedTrains.push(updatedTrain);
           } else if (
             (currentMinutes === "Leaving" &&
-              lastMinutes !== "Leaving" &&
-              !train.lastTrain) ||
+              (lastMinutes !== "Leaving") & !train.lastTrain) ||
             Number(currentMinutes) < Number(lastMinutes)
           ) {
             let updObj = {

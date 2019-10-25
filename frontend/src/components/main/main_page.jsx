@@ -328,7 +328,7 @@ class MainPage extends PureComponent {
     this.interval = setInterval(() => {
       console.count();
       this.tick();
-      if (this.state.seconds % 2 === 0) {
+      if (this.state.seconds % 1 === 0) {
         this.props.getCurrentEtas().then(value => {
           this.setState(prev => {
             if (prev.etas !== value) {

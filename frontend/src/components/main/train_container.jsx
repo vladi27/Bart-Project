@@ -32,12 +32,16 @@ class TrainContainer extends PureComponent {
       pos: null,
       start: null,
       currentSlice: [],
-      total: null
+      total: null,
+      lastTrain: false,
+      progress: null,
+      totalMinutes: null
     };
     this.intervalId = null;
 
     this.time = {
-      start: performance.now()
+      start: performance.now(),
+      end: false
     };
     this.ref = this.props.getOrCreateRef(this.props.id);
   }
@@ -47,15 +51,47 @@ class TrainContainer extends PureComponent {
     console.log(snapshot);
     console.count();
 
+    const routeNum = this.props.routeNumber;
+    const id = this.props.train.id;
+
+    if (
+      this.state.lastTrain &&
+      prevState.currentSlice &&
+      this.state.currentSlice &&
+      this.state.currentSlice.length === 0 &&
+      this.state.minutes === "1" &&
+      this.state.markers.length > 0
+    ) {
+      window.cancelAnimationFrame(this.rafID);
+      this.setState({ markers: [] });
+      this.props.removeTrain(routeNum, id);
+    }
+
+    if (
+      this.state.minutes === "Leaving" &&
+      prevState.minutes === "Leaving" &&
+      this.props.minutes === "Leaving" &&
+      prevState.currentSlice.length > 0 &&
+      this.state.currentSlice.length === 0
+    ) {
+      this.time.end = false;
+    }
+
     if (
       this.props.minutes !== this.state.minutes &&
       this.state.minutes === "Leaving" &&
+      prevProps.minutes === "Leaving" &&
+      prevState.minutes === "Leaving" &&
+      this.props.minutes !== "Leaving" &&
       this.state.station !== this.props.station
     ) {
-      let station = this.props.routeStations[this.props.index].slice;
+      this.time.end = false;
+
+      this.time.elapsed = 0;
+      this.time["start"] = performance.now();
+      let station = this.props.routeStations[this.props.index - 1].slice;
       const interval = Math.round(
-        (Number(this.props.minutes) * 60 * 1000) /
-          this.state.currentSlice.length
+        (Number(this.props.minutes) * 60 * 1000) / station.length
       );
       console.log(
         this.props.minutes,
@@ -64,15 +100,18 @@ class TrainContainer extends PureComponent {
         this.state.station
       );
       console.count();
-      this.setState(
+      return this.setState(
         {
           minutes: this.props.minutes,
           end: Number(this.props.minutes) * 60 * 1000,
           station: this.props.station,
-          interval: interval
+          lastTrain: this.props.train.lastTrain,
+          interval: interval,
+          currentSlice: station,
+          totalMinutes: Number(this.props.minutes) * 60 * 1000
         },
         () => {
-          this.time["start"] = performance.now();
+          this.time.end = true;
           let now = performance.now();
           this.touched(now);
         }
@@ -100,74 +139,184 @@ class TrainContainer extends PureComponent {
     } else if (
       this.props.minutes !== this.state.minutes &&
       this.state.minutes !== "Leaving" &&
+      prevState.minutes !== "Leaving" &&
       this.props.minutes === "Leaving" &&
-      this.state.station === this.props.station
+      this.state.station === this.props.station &&
+      this.state.currentSlice.length > 0
     ) {
       console.log(this.props.minutes, this.state.minutes, this.props.station);
       console.count();
+      let currentSlice3 = this.state.currentSlice.slice();
+      console.log(currentSlice3, this.state);
 
-      this.setState(prev => {
-        window.cancelAnimationFrame(this.rafID);
-        console.log(this.state);
-        return {
-          minutes: this.props.minutes,
-          end: null,
-
-          markers: this.props.currentSlice.currentSlice.shift(),
-          currentSlice: this.props.currentSlice.currentSlice
-        };
-      });
-
-      //this.time.start = null;
-      this.time.elapsed = null;
-    } else if (
-      this.props.minutes !== this.state.minutes &&
-      this.props.minutes === "1"
-    ) {
+      this.time.end = false;
       window.cancelAnimationFrame(this.rafID);
-
-      const interval = Math.round((55 * 1000) / this.state.currentSlice.length);
-      console.log(
-        this.props.minutes,
-        this.state.minutes,
-        this.props.station,
-        this.state.station
-      );
-      console.count();
-      this.setState(
+      let newSlice = this.props.currentSlice.currentSlice;
+      let newSlice2 = currentSlice3.concat([newSlice.shift()]);
+      console.log(newSlice2, this.state);
+      const interval3 = Math.round((20 * 1000) / newSlice2.length) * 2;
+      console.log(interval3);
+      return this.setState(
         {
           minutes: this.props.minutes,
-          end: 60000,
+          end: 21000 * 2,
+          currentSlice: newSlice2,
 
-          interval: interval
+          interval: interval3
         },
         () => {
-          this.time.elapsed = null;
+          this.time.elapsed = 0;
+          this.time.end = true;
           this.time["start"] = performance.now();
+
           let now = performance.now();
           this.touched(now);
         }
       );
 
-      let diff =
-        (Number(this.props.minutes) - Number(this.state.minutes)) * 1000 * 60;
-      let timeLeftToCover = this.time.end - this.time.elapsed;
-      console.log(
-        diff,
-        this.time.elapsed,
-        this.state.station,
-        this.props.minutes
-      );
-      // waypoints per second = this.state.
-    } else if (this.state.minutes !== this.props.minutes) {
-      this.setState({ minutes: this.props.minutes });
+      // } else {
+      //   window.cancelAnimationFrame(this.rafID);
+      //   return this.setState(prev => {
+      //     console.log(this.state);
+      //     return {
+      //       minutes: this.props.minutes,
+      //       // end: ,
+
+      //       markers: this.props.currentSlice.currentSlice.shift()
+      //       //currentSlice: this.props.currentSlice.currentSlice
+      //     };
+      //   });
+
+      //window.cancelAnimationFrame(this.rafID);
+      //this.time.start = null;
+      // } else if (
+      //   this.props.minutes !== this.state.minutes &&
+      //   this.props.minutes === "1"
+      // ) {
+      //   window.cancelAnimationFrame(this.rafID);
+
+      //   const interval = Math.round((60 * 1000) / this.state.currentSlice.length);
+      //   console.log(
+      //     this.props.minutes,
+      //     this.state.minutes,
+      //     this.props.station,
+      //     this.state.station
+      //   );
+      //   console.count();
+      //   this.setState(
+      //     {
+      //       minutes: this.props.minutes,
+      //       end: 65000,
+
+      //       interval: interval
+      //     },
+      //     () => {
+      //       this.time.elapsed = null;
+      //       this.time["start"] = performance.now();
+      //       let now = performance.now();
+      //       this.touched(now);
+      //     }
+      //   );
+
+      //   // let diff =
+      //   //   (Number(this.props.minutes) - Number(this.state.minutes)) * 1000 * 60;
+      //   // let timeLeftToCover = this.time.end - this.time.elapsed;
+      //   // console.log(
+      //   //   diff,
+      //   //   this.time.elapsed,
+      //   //   this.state.station,
+      //   //   this.props.minutes
+      //   // );
+      //   // waypoints per second = this.state.
+      // }
+    } else if (
+      this.state.minutes !== this.props.minutes &&
+      prevProps.minutes === this.state.minutes &&
+      this.state.minutes !== "Leaving" &&
+      this.props.minutes !== "Leaving" &&
+      Number(this.state.minutes) > Number(this.props.minutes) &&
+      (Number(this.props.minutes) * 60 * 1000) / this.state.totalMinutes <
+        this.state.progress &&
+      this.state.currentSlice.length > 0
+    ) {
+      this.time.end = false;
+      let realProgress =
+        (Number(this.props.minutes) * 60 * 1000) / this.state.totalMinutes;
+
+      console.log(realProgress, this.state);
+
+      // if (
+      //   realProgress < this.state.progress &&
+      //   this.state.currentSlice.length > 0
+      // )
+
+      {
+        window.cancelAnimationFrame(this.rafID);
+
+        const interval = Math.round(
+          (Number(this.props.minutes) * (60 * 1000)) /
+            this.state.currentSlice.length
+        );
+        console.log(
+          this.props.minutes,
+          this.state.minutes,
+          this.props.station,
+          this.state.station
+        );
+        console.count();
+        return this.setState(
+          {
+            minutes: this.props.minutes,
+            end: Number(this.props.minutes) * 60 * 1000 + 1000,
+
+            interval: interval
+          },
+          () => {
+            this.time.elapsed = 0;
+            this.time["start"] = performance.now();
+
+            let now = performance.now();
+            this.time.end = true;
+            this.touched(now);
+          }
+        );
+      }
+    } else if (
+      this.props.minutes !== this.state.minutes &&
+      this.state.minutes !== "Leaving" &&
+      prevState.minutes !== "Leaving" &&
+      this.props.minutes === "Leaving" &&
+      this.state.station === this.props.station &&
+      this.state.currentSlice.length === 0
+    ) {
+      // window.cancelAnimationFrame(this.rafID);
+
+      this.time.end = false;
+      return this.setState(prev => {
+        console.log(this.state);
+        return {
+          minutes: this.props.minutes,
+          // end: ,
+
+          markers: this.props.currentSlice.currentSlice.shift()
+          //currentSlice: this.props.currentSlice.currentSlice
+        };
+      });
+    } else if (
+      this.state.minutes !== this.props.minutes &&
+      prevState.minutes === this.state.minutes &&
+      this.state.minutes !== "Leaving" &&
+      this.props.minutes !== "Leaving" &&
+      Number(this.state.minutes) > Number(this.props.minutes)
+    ) {
+      return this.setState({ minutes: this.props.minutes });
     }
   }
 
   touched(now, interval) {
     console.log(this.state.currentSlice, this.props.station);
     console.log(this.time, this.props.station);
-    if (this.state.end && this.state.currentSlice.length > 0) {
+    if (this.state.currentSlice.length > 0 && this.time.end) {
       console.log(this.state.currentSlice, this.props.station);
       let newSlice = this.state.currentSlice;
       console.count();
@@ -181,7 +330,7 @@ class TrainContainer extends PureComponent {
         console.log(position);
         console.log(progress, this.state.station, newSlice, this.state.minutes);
         // this.ref.current.leafletElement.options.position = position;
-        this.setState({ markers: position });
+        this.setState({ markers: position, progress: progress });
 
         // console.log(
         //   this.ref.current.leafletElement.options.position,
@@ -194,7 +343,11 @@ class TrainContainer extends PureComponent {
         //   this.setState({ stateToDisplay: !this.state.stateToDisplay })
         // }
 
-        if (progress < 1 && this.state.currentSlice.length > 0) {
+        if (
+          progress < 0.9 &&
+          this.state.currentSlice.length > 0 &&
+          this.time.end
+        ) {
           let now2 = performance.now();
           console.log(newSlice);
           console.count();
@@ -202,6 +355,12 @@ class TrainContainer extends PureComponent {
             this.touched(now2, this.state.currentSlice);
           }, this.state.interval);
         }
+        // } else if (
+        //   this.state.currentSlice.length === 1 &&
+        //   this.state.minutes === "Leaving"
+        // ) {
+        //   window.cancelAnimationFrame(this.rafID);
+        // }
       });
     }
   }
@@ -267,13 +426,15 @@ class TrainContainer extends PureComponent {
         minutes: this.props.minutes,
         start: performance.now(),
         end: end,
+        totalMinutes: end,
         interval: this.props.interval,
-        currentSlice: this.props.currentSlice
+        currentSlice: this.props.currentSlice,
+        lastTrain: this.props.train.lastTrain
       },
       () => {
         if (this.props.minutes !== "Leaving") {
           let now = performance.now();
-
+          this.time.end = true;
           console.count();
           this.touched(now);
         }
@@ -305,6 +466,7 @@ class TrainContainer extends PureComponent {
     // clearInterval(this.intervalId);
     // clearInterval(this.intervalId2);
     //   clearInterval(this.interval3);
+    window.cancelAnimationFrame(this.rafID);
   }
 
   render() {
@@ -333,6 +495,12 @@ class TrainContainer extends PureComponent {
     console.log(this.state);
     console.log(this.time.start, this.props.station);
     console.log(this.props.minutes, this.state.interval, this.props.station);
+    console.log(
+      this.state.minutes,
+      this.state.interval,
+      this.state.station,
+      this.state.end
+    );
     console.log(this.time, this.state.station, this.state.minutes);
     // console.log(this.props.id);
     // const id = uuidv4();

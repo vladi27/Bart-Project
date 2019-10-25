@@ -196,6 +196,6 @@ const getPosition = createCachedSelector(
     //   }
     // }
   }
-)((state, props) => `${props.id}: ${props.station}`);
+)((state, props) => props.id);
 
 export default getPosition;
