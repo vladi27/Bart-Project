@@ -362,15 +362,17 @@ const trainsReducer = (state = {}, action) => {
           if (currentStationsSlice.length > 0) {
             currentStationsSlice.map((station, idx4) => {
               console.log(station);
-              let currents = currentEtas2[stationName2];
+
               let stationName2 = station.stationName;
+              let currents = currentEtas2[stationName2];
               let departures = [];
               if (currents) {
-                departures = currents["etd"];
+                departures = currents.etd;
               }
               let previousStation = currentStationsSlice[idx4 - 1];
-
+              console.log(departures);
               departures.map(departure => {
+                console.log(departure);
                 let dest = departure.abbreviation;
                 let hex = departure.hexcolor;
                 if (
@@ -614,7 +616,7 @@ const trainsReducer = (state = {}, action) => {
         updatedSorted.push(ele);
       });
       console.log(allTrains, updatedSorted);
-      let abc = uniqBy(updatedSorted, "id");
+      let abc = uniqBy(updatedSorted, "stationName");
       console.log(abc);
       const newObj = Object.assign({}, { [action.routeNum]: abc });
       return merge({}, state, newObj);

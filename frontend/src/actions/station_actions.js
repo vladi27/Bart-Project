@@ -219,12 +219,11 @@ export const receiveRouteSchedules = (schedules, id) => ({
   schedules: schedules.data.root.route,
   id
 });
-export const createTrains = (route, etas, sub) => ({
-  type: CREATE_TRAINS,
-  route,
-  etas,
-  sub
-});
+export const createTrains = (route, etas, sub) => (dispatch, getState) => {
+  dispatch({ type: CREATE_TRAINS, route, etas, sub });
+  const allTrains = getState().trains;
+  return allTrains;
+};
 export const addTrains = (route, trains, etas) => ({
   type: ADD_TRAINS,
   route,
