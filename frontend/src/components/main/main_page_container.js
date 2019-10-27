@@ -12,6 +12,7 @@ import {
   updateTrains,
   addTrains
 } from "../../actions/station_actions";
+import getCombinedState from "../../selectors/loading_selector";
 import debounceRender from "react-debounce-render";
 
 import MainPage from "./main_page";
@@ -21,7 +22,8 @@ const mapStateToProps = state => {
     routes: state.routes,
     waypoints: state.waypoints,
     allStations: state.stations,
-    etas: state.etas
+    etas: state.etas,
+    loading: getCombinedState(state)
   };
 };
 

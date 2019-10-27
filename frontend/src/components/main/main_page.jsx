@@ -13,8 +13,17 @@ import uniq from "lodash/uniq";
 import Station from "./stations";
 import { components, createFilter } from "react-windowed-select";
 import findIndex from "lodash/findIndex";
+import Loader from "react-loader-spinner";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import { css } from "@emotion/core";
+import { MoonLoader } from "react-spinners";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
+const override = css`
+  display: block;
+  margin: 0 auto;
+  border-color: red;
+`;
 const ROUTES4 = {
   1: {
     hexcolor: "#ffff33",
@@ -473,6 +482,8 @@ class MainPage extends PureComponent {
     // const options = this.props.allRoutes.map(ele => ele.title);
 
     const position = [37.844443, -122.252341];
+    const { loading } = this.props;
+
     // console.log(jsonObject);
 
     console.log(this.state);
@@ -488,23 +499,33 @@ class MainPage extends PureComponent {
 
     // console.log(this.props);
     // const customMarker = L.icon({ iconUrl: require('../../assets/images/iss.png')})
-
-    return (
-      <div>
-        <div className="react-select__menu">
-          <WindowedSelect
-            options={options}
-            isMulti
-            values={this.state.currentSelections}
-            styles={{ marginBottom: "200px" }}
-            placeholder={"hello"}
-            className="basic-multi-select"
-            classNamePrefix="select"
-            filterOption={customFilter}
-            onChange={this.handleChange.bind(this)}
-          />
-        </div>
-        {/* <div className="test">
+    if (!loading) {
+      return (
+        <MoonLoader
+          css={override}
+          sizeUnit={"px"}
+          size={150}
+          color={"#123abc"}
+          loading={this.state.loading}
+        />
+      );
+    } else {
+      return (
+        <div>
+          <div className="react-select__menu">
+            <WindowedSelect
+              options={options}
+              isMulti
+              values={this.state.currentSelections}
+              styles={{ marginBottom: "200px" }}
+              placeholder={"hello"}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              filterOption={customFilter}
+              onChange={this.handleChange.bind(this)}
+            />
+          </div>
+          {/* <div className="test">
             <DropdownMultiple
               titleHelper="Routes"
               title="Select routes"
@@ -514,44 +535,45 @@ class MainPage extends PureComponent {
               // toggleItem={this.handleChange}
             />
           </div> */}
-        <Map center={position} zoom={11} animate={true}>
-          {currentSelections && Object.keys(this.state.etas).length > 0
-            ? this.state.currentSelections.map((ele, idx) => {
-                let routeNumber = String(ele.value);
-                let id = "routeID -" + routeNumber;
+          <Map center={position} zoom={11} animate={true}>
+            {currentSelections && Object.keys(this.state.etas).length > 0
+              ? this.state.currentSelections.map((ele, idx) => {
+                  let routeNumber = String(ele.value);
+                  let id = "routeID -" + routeNumber;
 
-                console.log(routeNumber);
+                  console.log(routeNumber);
 
-                // let routeID = route.routeID;
-                // let schedule = this.props.schedules[route.number];
-                return (
-                  <RouteContainer
-                    // route={route}
+                  // let routeID = route.routeID;
+                  // let schedule = this.props.schedules[route.number];
+                  return (
+                    <RouteContainer
+                      // route={route}
 
-                    // waypoints={way2}
-                    routeNumber={routeNumber}
-                    currentColors={this.state}
-                    // drawPolyline={this.drawPolyline}
-                    // renderStops={this.renderStops}
-                    key={id}
-                    etas={this.state.etas}
-                    seconds={this.state.seconds}
-                  />
-                );
-              })
-            : null}
-          {currentSelections ? (
-            <div>
-              {this.renderStops()}
-              {this.drawPolyline()}
-            </div>
-          ) : null}
-          <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
-          />
-        </Map>
-        ; })
-      </div>
-    );
+                      // waypoints={way2}
+                      routeNumber={routeNumber}
+                      currentColors={this.state}
+                      // drawPolyline={this.drawPolyline}
+                      // renderStops={this.renderStops}
+                      key={id}
+                      etas={this.state.etas}
+                      seconds={this.state.seconds}
+                    />
+                  );
+                })
+              : null}
+            {currentSelections ? (
+              <div>
+                {this.renderStops()}
+                {this.drawPolyline()}
+              </div>
+            ) : null}
+            <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
+            />
+          </Map>
+          ; })
+        </div>
+      );
+    }
   }
 }
 

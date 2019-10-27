@@ -10,7 +10,8 @@ export const ROUTES = {
     destination: "Millbrae",
     abbreviation: ["MLBR", "SFIA"],
     direction: "South",
-    color: "Yellow"
+    color: "Yellow",
+    stationLength: 24
   },
 
   2: {
@@ -18,7 +19,8 @@ export const ROUTES = {
     abbreviation: ["ANTC"],
     destination: "Antioch",
     direction: "North",
-    color: "Yellow"
+    color: "Yellow",
+    stationLength: 25
   },
 
   3: {
@@ -26,7 +28,8 @@ export const ROUTES = {
     abbreviation: ["RICH"],
     destination: "Richmond",
     direction: "North",
-    color: "Orange"
+    color: "Orange",
+    stationLength: 18
   },
 
   4: {
@@ -34,7 +37,8 @@ export const ROUTES = {
     destination: ["Warm Springs"],
     abbreviation: ["WARM"],
     direction: "South",
-    color: "Orange"
+    color: "Orange",
+    stationLength: 18
   },
 
   5: {
@@ -42,7 +46,8 @@ export const ROUTES = {
     hexcolor: "#339933",
     destination: "Daly City",
     direction: "South",
-    abbreviation: ["DALY"]
+    abbreviation: ["DALY"],
+    stationLength: 19
   },
 
   6: {
@@ -51,7 +56,8 @@ export const ROUTES = {
     destination: ["Warm Springs"],
     abbreviation: ["WARM"],
 
-    direction: "North"
+    direction: "North",
+    stationLength: 19
   },
 
   7: {
@@ -60,7 +66,8 @@ export const ROUTES = {
 
     destination: "Daly City",
     direction: "South",
-    abbreviation: ["DALY", "MLBR"]
+    abbreviation: ["DALY", "MLBR"],
+    stations: 22
   },
 
   8: {
@@ -70,7 +77,8 @@ export const ROUTES = {
     direction: "North",
 
     destination: "Richmond",
-    abbreviation: ["RICH"]
+    abbreviation: ["RICH"],
+    stations: 22
   }
 };
 const uuidv4 = require("uuid/v4");

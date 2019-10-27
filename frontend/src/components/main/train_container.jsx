@@ -389,15 +389,15 @@ class TrainContainer extends PureComponent {
     return this.setState(
       {
         minutes: this.props.minutes,
-        // end: Number(this.state.minutes) * (60 * 1000),
+        end: Number(this.state.minutes) * (60 * 1000),
 
         // interval: interval,
         end: end,
         progress: 0
       },
       () => {
-        // this.time.elapsed = 0;
-        // this.time["start"] = performance.now();
+        this.time.elapsed = 0;
+        this.time["start"] = performance.now();
 
         let now = performance.now();
         this.time.end = true;
