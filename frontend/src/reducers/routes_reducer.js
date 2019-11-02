@@ -14,6 +14,7 @@ import cloneDeep from "lodash/cloneDeep";
 import findIndex from "lodash/findIndex";
 import * as geolib from "geolib";
 import jsonObject from "../waypoints/all_shapes";
+import geoJsonObject from "../waypoints/geo_format";
 import stations2 from "../waypoints/all_stations";
 
 const ROUTE_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -151,6 +152,7 @@ const routesReducer = (state = {}, action) => {
     case BUILD_WAY_POINTS:
       const route2 = state[action.routeNum];
       const waypoints = jsonObject[Number(action.routeNum) - 1];
+      const geoWaypoints = geoJsonObject[Number(action.routeNum) - 1];
       const stations2 = route2.stations;
 
       console.log(stations2);
@@ -162,32 +164,50 @@ const routesReducer = (state = {}, action) => {
       const newStations2 = stations2.map((station, idx) => {
         if (idx !== routeLength) {
           let nextStation = stations2[idx + 1];
-          let stationLocation = station.location;
-          let nextStationLocation = nextStation.location;
+          let stationLocation = [station.location[1], station.location[0]];
+          let nextStationLocation = [
+            nextStation.location[1],
+            nextStation.location[0]
+          ];
           console.log(stationLocation, nextStationLocation);
           let stationCoord = geolib.findNearest(
             stationLocation,
-            waypoints.waypoints
+            geoWaypoints.waypoints
           );
 
-          let coordIndex = indexOf(waypoints.waypoints, stationCoord);
+          let coordIndex = indexOf(geoWaypoints.waypoints, stationCoord);
           let coord = waypoints.waypoints[coordIndex];
+          let geoCoord = geoWaypoints.waypoints[coordIndex];
 
           let nextStationCoord = geolib.findNearest(
             nextStationLocation,
-            waypoints.waypoints
+            geoWaypoints.waypoints
           );
 
-          let nextCoordIndex = indexOf(waypoints.waypoints, nextStationCoord);
+          let nextCoordIndex = indexOf(
+            geoWaypoints.waypoints,
+            nextStationCoord
+          );
+          // let geoNextCoordIndex = indexOf(
+          //   geoWaypoints.waypoints,
+          //   nextStationCoord
+          // );
 
           let nextCoord = waypoints.waypoints[nextCoordIndex];
 
           let slice = waypoints.waypoints.slice(coordIndex, nextCoordIndex);
+          let geoSlice = geoWaypoints.waypoints.slice(
+            coordIndex,
+            nextCoordIndex
+          );
+          let meterDistance = geolib.getPathLength(geoSlice);
 
           console.log(slice);
 
           let obj = {
-            slice
+            slice,
+            meterDistance,
+            geoSlice
           };
 
           let newStation = Object.assign({}, station, obj);

@@ -12,6 +12,7 @@ import iconTrain from "./map_icon";
 import findIndex from "lodash/findIndex";
 import TrainContainer from "./train_container";
 import date from "date-and-time";
+import NewMarker from "./marker";
 import LiveTrains from "./live_trains";
 import TrainMarkerContainer from "./train_marker_container";
 
@@ -92,7 +93,7 @@ const routes = {
   }
 };
 
-class Route extends PureComponent {
+class Route extends Component {
   constructor(props) {
     super(props);
 
@@ -113,7 +114,7 @@ class Route extends PureComponent {
     console.log(this.props);
     this.intervalId = null;
     this.handleChange = this.handleChange.bind(this);
-    this.getOrCreateRef = this.getOrCreateRef.bind(this);
+    // this.getOrCreateRef = this.getOrCreateRef.bind(this);
     this.references = {};
 
     // this.state = { stations: this.props.selectedRoute.stations || [] };
@@ -148,12 +149,12 @@ class Route extends PureComponent {
     //  this.props.saveTrains(this.props.trains, num);
     this.setState({ trains: this.props.trains });
 
-    this.setState(() => {
-      let trains = this.props.trains || [];
-      trains.map(ele => {
-        return { [ele.id]: null };
-      });
-    });
+    // this.setState(() => {
+    //   let trains = this.props.trains || [];
+    //   trains.map(ele => {
+    //     return { [ele.id]: null };
+    //   });
+    // });
 
     // this.props.trains.map(train => {
     //   this.setState({ [train.id]: [] });
@@ -182,12 +183,18 @@ class Route extends PureComponent {
     // }, 17000);
   }
 
-  getOrCreateRef(id) {
-    if (!this.references.hasOwnProperty(id)) {
-      this.references[id] = React.createRef();
-    }
-    return this.references[id];
-  }
+  // getOrCreateRef(id) {
+  //   if (!this.references.hasOwnProperty(id)) {
+  //     this.cont = React.createRef();
+  //     this.references[id] = this.cont;
+  //     this.props.handleRefs(this.cont);
+  //   }
+  //   return this.references[id];
+  // }
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   return this.props.etas !== nextProps.etas;
+  // }
 
   componentWillUnmount() {
     const num = this.props.route.number;
@@ -280,15 +287,13 @@ class Route extends PureComponent {
   //   return null;
   // }
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   console.count();
-  //   return (
-  //     this.props.trains === nextProps.trains ||
-  //     this.state.trains === nextState.trains ||
-  //     this.props.trains !== nextProps.trains ||
-  //     this.state.trains === nextState.trains
-  //   );
-  // }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.count();
+    return (
+      this.props.etas !== nextProps.etas ||
+      this.state.trains !== nextProps.trains
+    );
+  }
 
   handleChange(id, location) {
     console.count();
@@ -327,6 +332,19 @@ class Route extends PureComponent {
 
       this.setState({ trains: this.props.trains });
     }
+
+    // if (this.state.trains !== prevState.trains && !prevState.trains) {
+    //   console.log(this.references);
+    //   const newRefernces = Object.keys(this.references).map(ele => {
+    //     if (this.references[ele].current !== null) {
+    //       return ele;
+    //     }
+    //   });
+    //   if (newRefernces.length > 0) {
+    //     console.log(newRefernces);
+    //     this.props.handleRefs(this.references);
+    //   }
+    // }
 
     // if (
     //   prevState.trains &&
@@ -479,7 +497,7 @@ class Route extends PureComponent {
                   console.log(train.pos, train.stationName);
                   let lastLocation = train.lastLocation;
                   let routeStation = route.stations[train.stationIdx];
-
+                  //this.ref = this.getOrCreateRef(train.id);
                   let id = train.id;
                   let nextStationId;
                   //let lastLocation = this.state[id];
@@ -514,32 +532,34 @@ class Route extends PureComponent {
                     //   key={idx}
                     //   icon={iconTrain}
                     // ></Marker>
-                    <TrainContainer
-                      markers={slice}
-                      seconds={this.props.seconds}
+                    <NewMarker
+                      //   markers={slice}
+                      // seconds={this.props.seconds}
                       color={color}
                       station={train.stationName}
                       minutes={train.minutes}
                       id={id}
-                      ratio={train.ratio}
+                      waypoints={train.waypoints}
+                      // stationSlice={train.stationSlice}
+                      //   ratio={train.ratio}
                       key={id}
                       routeStations={route.stations}
                       index={train.stationIdx}
                       routeNumber={this.props.routeNumber}
                       train={train}
-                      interval={train.interval}
-                      initialCoordinates={train.initialCoordinates}
-                      initialPosition={train.initialPosition}
-                      //ref={this.getOrCreateRef(id)}
+                      //  interval={train.interval}
+                      // initialCoordinates={train.initialCoordinates}
+                      // initialPosition={train.initialPosition}
+                      // ref={this.ref}
                       references={this.references}
-                      getOrCreateRef={this.getOrCreateRef}
-                      initialSlice={train.initialSlice}
-                      removeTrain={this.props.removeTrain}
+                      //getOrCreateRef={this.getOrCreateRef}
+                      // initialSlice={train.initialSlice}
+                      // removeTrain={this.props.removeTrain}
                       //lastLocation={this.state[id]}
-                      handleChange={this.handleChange}
+                      //handleChange={this.handleChange}
                       // lastLocation={lastLocation}
                       // nextStationId={nextStationId}
-                    ></TrainContainer>
+                    ></NewMarker>
                   );
                 }
               })

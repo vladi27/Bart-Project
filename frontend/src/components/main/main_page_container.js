@@ -24,6 +24,7 @@ const mapStateToProps = state => {
     allStations: state.stations,
     etas: state.etas,
     loading: getCombinedState(state)
+    //  trains: state.trains
   };
 };
 
@@ -50,4 +51,4 @@ const DebouncedMain = debounceRender(MainPage);
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(DebouncedMain);
+)(MainPage);

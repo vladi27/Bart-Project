@@ -66,11 +66,29 @@ const getPosition = createCachedSelector(
     console.log(initialCoordinates);
     if (initialPosition && minutes !== "Leaving") {
       let slice = stations[trainIndex - 1].slice.slice();
+      let geoSlice = stations[trainIndex - 1].geoSlice.slice();
       // let initialCoordinationates = trainitialCoordinationates;
-
+      let distance = stations[trainIndex - 1].meterDistance;
+      let timeStamp = performance.now();
+      let destTimestamp = timeStamp + Number(minutes) * 60 * 1000;
+      const speed = geolib.getSpeed(
+        {
+          latitude: Number(slice[0][0]),
+          longitude: Number(slice[0][1]),
+          time: timeStamp
+        },
+        {
+          latitude: Number(slice[slice.length - 1][0]),
+          longitude: Number(slice[slice.length - 1][1]),
+          time: destTimestamp
+        }
+      );
+      const metersPerWaypoint = distance / slice.length;
+      console.log(stationName, speed);
       let index = indexOf(slice, initialCoordinates);
       console.log(slice, index, initialCoordinates);
       let currentSlice = slice.slice(index + 1);
+      let geo = geoSlice.slice(index + 1);
 
       // if (currentSlice.length < 3) {
       //   currentSlice = slice.slice(Math.round(slice.length / 2));
@@ -78,20 +96,20 @@ const getPosition = createCachedSelector(
 
       console.log(currentSlice, train);
 
-      return currentSlice;
+      return { currentSlice, speed, metersPerWaypoint, distance, geo };
     } else if (initialPosition && minutes === "Leaving") {
       let currentSlice = stations[trainIndex].slice.slice();
 
       return currentSlice;
     }
-    if (!initialPosition && minutes === "Leaving") {
-      let currentSlice = stations[trainIndex].slice.slice();
-      let timeToStation = schedules[stationName].timeToNextStation;
-      let interval = Math.round(
-        (Number(timeToStation) * 60 * 1000) / (currentSlice.length - 1)
-      );
-      return { currentSlice, interval };
-    }
+    // if (!initialPosition && minutes === "Leaving") {
+    //   let currentSlice = stations[trainIndex].slice.slice();
+    //   let timeToStation = schedules[stationName].timeToNextStation;
+    //   let interval = Math.round(
+    //     (Number(timeToStation) * 60 * 1000) / (currentSlice.length - 1)
+    //   );
+    //   return { currentSlice, interval };
+    // }
 
     // if (minutes === "Leaving") {
     //   let slice = stations[trainIndex].slice;

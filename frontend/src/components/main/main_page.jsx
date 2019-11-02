@@ -17,6 +17,7 @@ import Loader from "react-loader-spinner";
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import { css } from "@emotion/core";
 import { MoonLoader } from "react-spinners";
+import { convertSpeed } from "geolib";
 // const data = require("json!./../../src/waypoints/all_shapes");
 
 const override = css`
@@ -100,6 +101,13 @@ const RouteColors = {
   Green: 5,
   Red: 7
 };
+const RouteColors2 = {
+  "#ffff33": 1,
+  "#ff9933": 3,
+  "#339933": 5,
+  "#ff0000": 7
+};
+console.log(RouteColors2[ROUTES4[8].hexcolor]);
 
 class MainPage extends PureComponent {
   constructor(props) {
@@ -115,11 +123,14 @@ class MainPage extends PureComponent {
 
     this.state = {
       currentSelections: [],
-      etas: {}
+      etas: {},
+      trains: {},
+      refs: []
     };
     this.renderStops = this.renderStops.bind(this);
     this.drawPolyline = this.drawPolyline.bind(this);
     this.interval = null;
+    this.handleRefs = this.handleRefs.bind(this);
   }
 
   componentDidMount() {
@@ -163,7 +174,12 @@ class MainPage extends PureComponent {
     //   // });
     // }, 3000);
 
-    this.setState({ seconds: 0, fetchData: false, currentSelections: [] });
+    this.setState({
+      seconds: 0,
+      fetchData: false,
+      currentSelections: [],
+      trains: this.props.trains
+    });
 
     // this.interval2 = setInterval(() => {
     //   let current = this.state.currentSelections;
@@ -228,29 +244,15 @@ class MainPage extends PureComponent {
   //   // this.props.receiveWayPoints(jsonObject);
   // }
 
-  componentDidUpdate(prevState) {
-    if (!this.state.currentSelections) {
-      console.count();
-      this.setState({ fetchData: false, seconds: 0 });
-      clearInterval(this.interval);
-      this.interval = null;
-    } else if (
-      !prevState.currentSelections &&
-      this.state.currentSelections.length > 0
-      // (prevState.currentSelections.length === 0 &&
-      //   this.state.currentSelections.length > 0)
-    ) {
-      console.count();
-      this.setState({ fetchData: true });
-      // this.interval = setInterval(() => {
-      //   console.count();
-      //   this.tick();
-      //   if (this.state.seconds % 30 === 0) {
-      //     this.props.getCurrentEtas();
-      //   }
-      // }, 10000);
-    }
-  }
+  // componentDidUpdate(prevState) {
+  //   // if (this.state.etas !== this.props.etas) {
+  //   //   this.setState({ etas: this.props.etas });
+  //   // }
+
+  //   if (this.state.refs !== prevState.refs && this.state.refs.length > 0) {
+  //     this.animate(this.update);
+  //   }
+  // }
 
   componentWillUnmount() {
     clearInterval(this.interval);
@@ -260,6 +262,15 @@ class MainPage extends PureComponent {
     this.setState(prevState => ({
       seconds: prevState.seconds + 1
     }));
+  }
+
+  handleRefs(refs) {
+    this.setState(prev => {
+      let currentRefs = prev.refs;
+
+      let newRefs = [...currentRefs, refs];
+      return { refs: newRefs };
+    });
   }
 
   renderStops() {
@@ -290,6 +301,13 @@ class MainPage extends PureComponent {
         );
       });
     });
+  }
+
+  shouldComponentUpdate(nextState, nextProps) {
+    return (
+      this.state.currentSelections !== nextState.currentSelections ||
+      this.props.loading !== nextProps.loading
+    );
   }
 
   drawPolyline() {
@@ -341,7 +359,7 @@ class MainPage extends PureComponent {
         this.props.getCurrentEtas().then(value => {
           this.setState(prev => {
             if (prev.etas !== value) {
-              this.setState({ etas: value });
+              return { etas: value };
             }
           });
         });
@@ -353,6 +371,48 @@ class MainPage extends PureComponent {
     clearInterval(this.interval);
     this.interval = null;
   }
+
+  // update(t) {
+  //   console.log(this.state);
+  //   let refs = this.state.refs;
+  //   console.log(refs);
+  //   refs.map(component => {
+  //     const dur =
+  //       component.current.time.lastUpdate + component.current.time.duration;
+  //     const min = component.current.props.minutes;
+  //     var MsecPerFrame = 10,
+  //       MsecPerAnim = 2000;
+  //     console.log(dur, min, component);
+  //     if (!this.time) {
+  //       this.time = t;
+  //     }
+  //     var progress = t - this.time;
+  //     if (progress < MsecPerAnim) {
+  //       requestAnimationFrame(this.Step);
+  //     } else if (min !== "Leaving" && t > dur) {
+  //       component.current.touched(t);
+  //       this.resolve();
+  //     }
+  //   });
+
+  //   this.animate(this.update);
+  // }
+
+  // animate(AnimStep) {
+  //   // const rafID = new Promise(resolve => requestAnimationFrame(resolve));
+  //   // const timestamp = await rafID;
+  //   // console.log(timestamp);
+  //   // this.update(timestamp);
+  //   let o = {};
+
+  //   return new Promise(function(resolve, reject) {
+  //     // Remember some local variables
+  //     o.Step = AnimStep.bind(o); // Bind "this" in o.Step() to "o"
+  //     o.resolve = resolve;
+  //     o.time = 0;
+  //     o.id = requestAnimationFrame(o.Step);
+  //   });
+  // }
 
   handleChange(value) {
     let difference = [];
@@ -412,38 +472,38 @@ class MainPage extends PureComponent {
     const allRoutes = this.props.routes;
     const customFilter = createFilter({ ignoreAccents: false });
     const options = [
-      {
-        value: "20",
-        label: "Oakland Int'l Airport - Coliseum"
-      },
-      {
-        value: "19",
-        label: "Coliseum - Oakland Int'l Airport"
-      },
-      {
-        value: "14",
-        label: "SFO - Millbrae"
-      },
-      {
-        value: "13",
-        label: "Millbrae - SFO"
-      },
-      {
-        value: "12",
-        label: "Daly City - Dublin/Pleasanton"
-      },
-      {
-        value: "11",
-        label: "Dublin/Pleasanton - Daly City"
-      },
-      {
-        value: "10",
-        label: "MacArthur - Dublin/Pleasanton"
-      },
-      {
-        value: "9",
-        label: "Dublin/Pleasanton - MacArthur"
-      },
+      // {
+      //   value: "20",
+      //   label: "Oakland Int'l Airport - Coliseum"
+      // },
+      // {
+      //   value: "19",
+      //   label: "Coliseum - Oakland Int'l Airport"
+      // },
+      // {
+      //   value: "14",
+      //   label: "SFO - Millbrae"
+      // },
+      // {
+      //   value: "13",
+      //   label: "Millbrae - SFO"
+      // },
+      // {
+      //   value: "12",
+      //   label: "Daly City - Dublin/Pleasanton"
+      // },
+      // {
+      //   value: "11",
+      //   label: "Dublin/Pleasanton - Daly City"
+      // },
+      // {
+      //   value: "10",
+      //   label: "MacArthur - Dublin/Pleasanton"
+      // },
+      // {
+      //   value: "9",
+      //   label: "Dublin/Pleasanton - MacArthur"
+      // },
       {
         value: "8",
         label: "Millbrae/Daly City - Richmond"
@@ -483,6 +543,11 @@ class MainPage extends PureComponent {
 
     const position = [37.844443, -122.252341];
     const { loading } = this.props;
+    let trains;
+
+    if (this.props.trains) {
+      trains = this.props.trains;
+    }
 
     // console.log(jsonObject);
 
@@ -535,23 +600,27 @@ class MainPage extends PureComponent {
               // toggleItem={this.handleChange}
             />
           </div> */}
-          <Map center={position} zoom={11} animate={true}>
+          <Map center={position} zoom={11}>
             {currentSelections && Object.keys(this.state.etas).length > 0
               ? this.state.currentSelections.map((ele, idx) => {
                   let routeNumber = String(ele.value);
                   let id = "routeID -" + routeNumber;
-
+                  let routeTrains;
                   console.log(routeNumber);
+                  if (this.props.trains && trains[routeNumber]) {
+                    routeTrains = trains[routeNumber];
+                  }
 
                   // let routeID = route.routeID;
                   // let schedule = this.props.schedules[route.number];
                   return (
                     <RouteContainer
                       // route={route}
-
+                      //  trains={this.props.trains}
                       // waypoints={way2}
                       routeNumber={routeNumber}
                       currentColors={this.state}
+                      handleRefs={this.handleRefs}
                       // drawPolyline={this.drawPolyline}
                       // renderStops={this.renderStops}
                       key={id}
