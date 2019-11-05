@@ -4,13 +4,13 @@ import findIndex from "lodash/findIndex";
 import * as geolib from "geolib";
 import createCachedSelector from "re-reselect";
 import uniqBy from "lodash/uniq";
-
+import { lineString, along, lineDistance, lineChunk } from "@turf/turf";
 const inRange = require("in-range");
 
-const getTrains = (state, props) => {
-  return state.trains[props.routeNumber];
-};
+const STEPS = 60000;
+const OPTIONS = { units: "kilometers" };
 
+const getTrains = (state, props) => state.trains;
 const getEtas = state => state.etas;
 
 const getRouteStations = (state, props) =>
@@ -21,7 +21,35 @@ const getRouteSchedules = (state, props) =>
 const createInitialPosition = createCachedSelector([getTrains], trains => {
   console.log(trains);
   if (trains) {
-    return trains;
+    const allResults = [];
+    const keys = Object.keys(trains);
+    console.log(keys);
+    keys.map(key => {
+      let routeTrains = trains[key];
+      routeTrains.map(train => {
+        console.log(train);
+        let minutes = train.minutes;
+        let totalMinutes = train.totalMinutes;
+        let segments = train.segments;
+
+        // if (minutes !== "Leaving") {
+        //   let index = totalMinutes - Number(minutes);
+        //   let currentChunk = segments.features[index];
+        //   // let distance = lineDistance(currentChunk, OPTIONS);
+        //   // let results = [];
+        //   // for (let i = 0; i < distance; i += distance / STEPS) {
+        //   //   let segment = along(currentChunk, i, OPTIONS);
+        //   //   results.push(segment.geometry.coordinates);
+        //   // }
+        //   let obj = { currentSlice: currentChunk };
+        //   let newTrain = Object.assign({}, train, obj);
+        //   return allResults.push(newTrain);
+        // } else {
+        allResults.push(train);
+        // }
+      });
+    });
+    return allResults;
     //   const results = [];
     //   const newT = trains.map(train => {
     //     let minutes = train.minutes;
@@ -120,6 +148,6 @@ const createInitialPosition = createCachedSelector([getTrains], trains => {
     //   return results;
     // }
   }
-})((state, props) => props.routeNumber);
+})((state, props) => JSON.stringify(Object.keys(state.trains)));
 
 export default createInitialPosition;

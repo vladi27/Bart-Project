@@ -30,11 +30,11 @@ const persistenceMiddleware = store => dispatch => action => {
       let newState = store.getState();
       handleWaypoints(action, store, newState);
     }
-    if (action.type === "UPDATE_TRAINS") {
-      console.count();
-      let newState = store.getState();
-      handleNewTrains(action, store, newState);
-    }
+    // if (action.type === "UPDATE_TRAINS") {
+    //   console.count();
+    //   let newState = store.getState();
+    //   handleNewTrains(action, store, newState);
+    // }
   }
   return result;
 };
@@ -45,14 +45,16 @@ const handleWaypoints = (action, store, newState) => {
   const num3 = routeNum2.number;
   store.dispatch(buildWayPoints(num3));
 };
-const handleNewTrains = (action, store, newState) => {
-  console.log(action);
-  const routeNum3 = store.getState().routes[action.routeNum];
-  const trains = store.getState().trains[action.routeNum];
-  const etas = store.getState().etas;
+// const handleNewTrains = (action, store, newState) => {
+//   console.log(action);
+//   const routeNum3 = store.getState().routes[action.routeNum];
+//   const trains = store.getState().trains[action.routeNum];
+//   const etas = store.getState().etas;
 
-  store.dispatch(addTrains(routeNum3, trains, etas));
-};
+//   setTimeout(() => {
+//     store.dispatch(addTrains(routeNum3, trains, etas));
+//   }, 20000);
+// };
 
 const updateRoute = (action, store, newState) => {
   // const routeTrains = store.getState().trains[action.route.number];

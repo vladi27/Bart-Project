@@ -132,48 +132,8 @@ export const routes = {
     abbreviation: "RCH"
   }
 };
-const nextTrain = etas => {
-  let earliestDep = etas[0][1];
-  if (earliestDep === "leaving") {
-    return {
-      prevStation: etas[0][0],
-      nextStation: {
-        nextStationAbbrev: etas[1][0],
-        nextStationEstimatedDep: etas[1][1]
-      }
-    };
-  }
-  let idx;
-  for (let i = 1; i < etas.length; i++) {
-    if (etas[i][1] === "leaving") {
-      return {
-        prevStation: etas[i][0],
-        nextStation: {
-          nextStationAbbrev: etas[i + 1][0],
-          nextStationEstimatedDep: etas[i + 1][1]
-        }
-      };
-    }
-    if (etas[i][1] < earliestDep) {
-      earliestDep = etas[i][1];
-      idx = i;
-    }
-  }
-  const prevStationIdx = stationsSouthBound.indexOf(etas[idx][0]) - 1;
-  return {
-    prevStation: stationsSouthBound[prevStationIdx],
-    nextStation: {
-      nextStationAbbrev: etas[idx][0],
-      nextStationEstimatedDep: etas[idx][1]
-    }
-  };
-};
 
-export const receiveStations = stations => ({
-  type: RECEIVE_STATIONS,
-  stations: stations.data.root.stations.station
-});
-export const receiveRoutes = routes => {
+const receiveRoutes = routes => {
   return {
     type: RECEIVE_ROUTES,
     routes: routes.data.root.routes.route
@@ -187,43 +147,29 @@ export const receiveRoutes = routes => {
 //     route
 //   };
 // };
-export const receiveStationEta = (eta, abbr) => {
-  return {
-    type: RECEIVE_STATION_ETA,
-    eta: eta.data.root.station,
-    abbr
-  };
-};
+//  const receiveStationEta = (eta, abbr) => {
+//   return {
+//     type: RECEIVE_STATION_ETA,
+//     eta: eta.data.root.station,
+//     abbr
+//   };
+// };
 
-export const receiveRouteInfo = info => ({
+const receiveRouteInfo = info => ({
   type: RECEIVE_ROUTE_INFO,
   info
 });
 
-export const receiveInitialSBInfo = info => ({
-  type: RECEIVE_INITIAL_SB_INFO,
-  info
-});
-
-export const receiveInitialNBInfo = info => ({
-  type: RECEIVE_INITIAL_NB_INFO,
-  info
-});
-
-export const receiveRouteStations = stations => ({
+const receiveRouteStations = stations => ({
   type: RECEIVE_ROUTE_STATIONS,
   stations: stations.data.root.routes.route
 });
-export const receiveRouteSchedules = (schedules, id) => ({
+const receiveRouteSchedules = (schedules, id) => ({
   type: RECEIVE_ROUTE_SCHEDULES,
   schedules: schedules.data.root.route,
   id
 });
-export const createTrains = (route, etas, sub) => (dispatch, getState) => {
-  dispatch({ type: CREATE_TRAINS, route, etas, sub });
-  const allTrains = getState().trains;
-  return allTrains;
-};
+
 export const addTrains = (route, trains, etas) => ({
   type: ADD_TRAINS,
   route,
@@ -279,6 +225,21 @@ export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
     })
   );
 
+export const createTrains = (route, etas, sub) => (dispatch, getState) =>
+  Promise.resolve().then(() => {
+    dispatch({ type: CREATE_TRAINS, route, etas, sub });
+    const allTrains = getState().trains;
+    return allTrains;
+  });
+
+// export const someThenableThunk = someData => (dispatch, getState) => Promise.resolve().then(() => {
+//   const { someReducer } = getState();
+//   return dispatch({
+//     type: actionTypes.SOME_ACTION_TYPE,
+//     someData,
+//   });
+// });
+
 // function getCurrentEtas(routes, route) {
 //   return (dispatch) => {
 //     dispatch({ type: POST_LOADING });
@@ -297,11 +258,6 @@ export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
 //   }
 // }
 
-export const fetchStationDepartures = abbr => dispatch =>
-  getStationDepartures(abbr)
-    .then(eta => dispatch(receiveStationEta(eta, abbr)))
-    .catch(err => console.log(err));
-
 export const fetchRouteStations = id => dispatch =>
   getRouteStations(id)
     .then(stations => dispatch(receiveRouteStations(stations)))
@@ -317,56 +273,7 @@ export const fetchRoutes = () => dispatch =>
     .then(routes => dispatch(receiveRoutes(routes)))
     .catch(err => console.log(err));
 
-export const fetchStations = () => dispatch =>
-  getStations()
-    .then(stations => dispatch(receiveStations(stations)))
-    .catch(err => console.log(err));
-
 export const fetchRouteInfo = () => dispatch =>
   getRouteInfo()
     .then(info => dispatch(receiveRouteInfo(info)))
     .catch(err => console.log(err));
-
-export const fetchInitialStationDataSouth = () => dispatch =>
-  getInitialStationDataSouth().then(responses => {
-    const etas = [];
-    const extractETD = (stn, response) => {
-      const etds = response.data.root.station[0].etd;
-      if (etds) {
-        const currETD = etds.filter(
-          stn => stn.abbreviation === "SFIA" || stn.abbreviation === "MLBR"
-        );
-        if (currETD.length) {
-          const etd = currETD[0].estimate[0];
-          const eta = etd.minutes;
-          etas.push([stn, eta]);
-        }
-      }
-    };
-    responses.forEach(response => {
-      const stn = response.data.root.station[0].abbr;
-      return extractETD(stn, response);
-    });
-    return dispatch(receiveInitialSBInfo(nextTrain(etas)));
-  });
-
-export const fetchInitialStationDataNorth = () => dispatch =>
-  getInitialStationDataNorth().then(responses => {
-    const etas = [];
-    const extractETD = (stn, response) => {
-      const etds = response.data.root.station[0].etd;
-      if (etds) {
-        const currETD = etds.filter(stn => stn.abbreviation === "ANTC");
-        if (currETD.length) {
-          const etd = currETD[0].estimate[0];
-          const eta = etd.minutes;
-          etas.push([stn, eta]);
-        }
-      }
-    };
-    responses.forEach(response => {
-      const stn = response.data.root.station[0].abbr;
-      return extractETD(stn, response);
-    });
-    return dispatch(receiveInitialNBInfo(nextTrain(etas)));
-  });

@@ -18,6 +18,7 @@
     "jwt-decode": "^2.2.0",
     "leaflet": "^1.5.1",
     "leaflet-drift-marker": "^1.0.3",
+    "leaflet-geometryutil": "^0.9.1",
     "leaflet.awesome-markers": "^2.0.5",
     "lodash.indexof": "^4.0.5",
     "memoize-one": "^5.1.1",
@@ -26,6 +27,7 @@
     "react": "^16.9.0",
     "react-debounce-render": "^5.0.0",
     "react-dom": "^16.9.0",
+    "react-hooks-worker": "^0.9.0",
     "react-id-generator": "^2.0.0",
     "react-leaflet": "^2.4.0",
     "react-loader-spinner": "^3.1.4",
@@ -58,5 +60,7 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "devDependencies": {}
+  "devDependencies": {
+    "worker-plugin": "^3.2.0"
+  }
 }

@@ -10,7 +10,7 @@ import {
   REMOVE_TRAINS,
   REMOVE_TRAIN
 } from "../actions/station_actions";
-import { lineString, along, lineDistance } from "@turf/turf";
+import { lineString, along, lineDistance, lineChunk } from "@turf/turf";
 import findIndex from "lodash/findIndex";
 
 import find from "lodash/find";
@@ -185,9 +185,11 @@ const trainsReducer = (state = {}, action) => {
                     direction: routeDirection,
                     minutes,
                     stationName,
+                    route: route.number,
                     lastTrain: false,
                     stationIdx: idx,
                     id,
+                    initCoords: station.location,
                     pos: station.location,
                     initialPosition: true
                   };
@@ -240,8 +242,11 @@ const trainsReducer = (state = {}, action) => {
                       // let results = [];
                       // const locations = prevStation.geoSlice;
                       // const line = lineString(locations);
+
                       // console.log(line); // our array of lat/lngs
                       // const distance = lineDistance(line, OPTIONS);
+                      // const chunk = distance / Number(minutes);
+                      // const segments = lineChunk(line, chunk, OPTIONS);
                       // console.log(line, distance);
                       // for (let i = 0; i < distance; i += distance / STEPS) {
                       //   let segment = along(line, i, OPTIONS);
@@ -253,8 +258,12 @@ const trainsReducer = (state = {}, action) => {
                         hexcolor,
                         direction: routeDirection,
                         minutes,
+                        // segments,
+                        totalMinutes: Number(minutes),
                         stationName,
+                        route: route.number,
                         lastTrain,
+                        initCoords: prevStation.location,
                         // waypoints: results,
                         stationIdx: idx,
                         initialPosition: true,
@@ -566,10 +575,19 @@ const trainsReducer = (state = {}, action) => {
             //   results.push(segment.geometry.coordinates);
             // }
 
+            // const locations = stations[train.stationIdx].geoSlice;
+            // const line = lineString(locations);
+
+            // // console.log(line); // our array of lat/lngs
+            // const distance = lineDistance(line, OPTIONS);
+            // const chunk = distance / Number(nextDepartures.estimate[0].minutes);
+            // const segments = lineChunk(line, chunk, OPTIONS);
             let newObj = {
               stationName: nextStationName,
               stationIdx: train.stationIdx + 1,
               minutes: nextDepartures.estimate[0].minutes,
+              // segments,
+              totalMinutes: Number(nextDepartures.estimate[0].minutes),
               //departures: nextStationEstimates[index3].estimate[0],
               lastTrain,
               //waypoints: results,
