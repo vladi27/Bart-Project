@@ -16,7 +16,7 @@ const recentEtasReducer = (state = {}, action) => {
       const allEtas = action.etas.slice();
       const results = {};
       allEtas.forEach(ele => {
-        let newEle = cloneDeep(ele);
+        let newEle = JSON.parse(JSON.stringify(ele));
 
         ele.etd.forEach((ele2, idx) => {
           let obj = {

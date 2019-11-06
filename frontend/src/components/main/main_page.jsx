@@ -199,16 +199,18 @@ class MainPage extends Component {
       trains: {},
       refs: [],
       hexcolors: [],
-      update: 0
+      update: 0,
+      trains: []
     };
     this.timer = 0;
     //this.renderStops = this.renderStops.bind(this);
     // this.drawPolyline = this.drawPolyline.bind(this);
     this.interval = null;
     this.handleRefs = this.handleRefs.bind(this);
-    this.getMap = this.getMap.bind(this);
+    //this.getMap = this.getMap.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.mapRef = React.createRef();
+    this.bounds = null;
 
     //this.customFilter = this.customFilter.bind(this);
   }
@@ -260,6 +262,13 @@ class MainPage extends Component {
       currentSelections: [],
       trains: this.props.trains
     });
+
+    // this.mapRef.current.leafletElement.locate({
+    //   watch: true,
+    //   setView: true,
+    //   maxZoom: 13,
+    //   enableHighAccuracy: true
+    // });
 
     // this.interval2 = setInterval(() => {
     //   let current = this.state.currentSelections;
@@ -391,6 +400,12 @@ class MainPage extends Component {
     );
   }
 
+  // componentDidUpdate(prevProps) {
+  //   if (this.props.trains !== this.state.trains) {
+  //     this.setState({ trains: this.props.trains });
+  //   }
+  // }
+
   // drawPolyline() {
   //   // console.log(this.state);
   //   const currentRoutes = this.state.currentSelections;
@@ -436,8 +451,8 @@ class MainPage extends Component {
     // });
     this.interval = setInterval(() => {
       console.count();
-      this.tick();
-      if (this.timer % 1 === 0 && this.state.update > 0) {
+      //this.tick();
+      if (this.state.update > 0) {
         this.props.getCurrentEtas().then(value => {
           this.setState(prev => {
             if (prev.etas !== value) {
@@ -455,7 +470,7 @@ class MainPage extends Component {
                     );
 
                     // stagger the timeout for each loop by the index
-                  }, i * 100);
+                  }, i * 300);
                 });
               }
               return { etas: value, update: (prev.update += 1) };
@@ -521,15 +536,17 @@ class MainPage extends Component {
     }, 400);
   }
 
-  getMap = () => {
+  getMap() {
+    let panes = this.mapRef.current.leafletElement.getPanes();
+    console.log(panes);
     return this.mapRef;
-  };
+  }
 
   handleSelect(value) {
     let difference = [];
 
     const routes = this.props.routes;
-    const etas = this.state.etas;
+    const etas = this.props.etas;
 
     // difference = this.state.currentSelections
     //   .slice()
@@ -729,6 +746,8 @@ class MainPage extends Component {
     const hexcolors = this.state.hexcolors || [];
     const uniques = uniq(hexcolors);
     const update = String(this.state.update);
+    const bounds = this.bounds;
+    console.log(bounds);
 
     // console.log(jsonObject);
 
@@ -758,6 +777,7 @@ class MainPage extends Component {
         />
       );
     } else {
+      //this.mapRef.current.leafletElement.setMaxBounds
       return (
         <div>
           {/* <div className="react-select__menu">
@@ -790,9 +810,15 @@ class MainPage extends Component {
             />
           </div> */}
           <Map
+            watch={true}
+            enableHighAccuracy={true}
             center={position}
+            wheelDebounceTime={60}
             animate={true}
             zoom={11}
+            //maxZoom={13}
+            //minZoom={12}
+            //maxBounds={bounds}
             preferCanvas={true}
             ref={this.mapRef}
           >
@@ -812,7 +838,7 @@ class MainPage extends Component {
                     <Trains
                       trains={trains}
                       update={update}
-                      getMap={this.getMap}
+                      getMap={this.getMap.bind(this)}
                       routes={routes}
                     />
                   </React.Fragment>

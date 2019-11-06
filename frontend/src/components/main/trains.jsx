@@ -41,16 +41,16 @@ const Trains = React.memo(function Trains({ trains, update, getMap, routes }) {
       });
 
       setTimeout(() => {
-        requestAnimationFrame(animate);
-      }, 1000 / 60);
+        L.Util.requestAnimFrame(animate);
+      }, 1000 / 10);
     };
     //cancelAnimationFrame(frameId);
-    const frameId = requestAnimationFrame(t => {
+    const frameId = L.Util.requestAnimFrame(t => {
       //startTime = t;
       animate(t);
     });
 
-    return () => cancelAnimationFrame(frameId);
+    return () => L.Util.cancelAnimFrame(frameId);
   }, []);
 
   return (
