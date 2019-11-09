@@ -22,6 +22,7 @@ export const RECEIVE_WAYPOINTS = "RECEIVE_WAYPOINTS";
 export const RECEIVE_ROUTES = "RECEIVE_ROUTES";
 export const RECEIVE_ROUTE_STATIONS = "RECEIVE_ROUTE_STATIONS";
 export const RECEIVE_CURRENT_ETAS = "RECEIVE_CURRENT_ETAS";
+export const UPDATE_CURRENT_ETAS = "UPDATE_CURRENT_ETAS";
 export const RECEIVE_ROUTE_SCHEDULES = "RECEIVE_ROUTE_SCHEDULES";
 export const RECEIVE_STATION_ETA = "RECEIVE_STATION_ETA";
 export const CREATE_TRAINS = "CREATE_TRAINS";
@@ -193,11 +194,10 @@ export const buildWayPoints = routeNum => ({
   routeNum
 });
 
-export const updateTrains = (routeNum, etas, stations) => ({
+export const updateTrains = (routes, etas) => ({
   type: UPDATE_TRAINS,
-  routeNum,
-  etas,
-  stations
+  routes,
+  etas
 });
 
 export const receiveWayPoints = jsonObj => ({
@@ -222,6 +222,20 @@ export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
       const etas3 = getState().etas;
       console.log(etas3);
       return etas3;
+    })
+  );
+export const refetchCurrentEtas = (routes, route) => (dispatch, getState) =>
+  fetchCurrentEtas().then(etas2 =>
+    Promise.resolve().then(() => {
+      dispatch({
+        type: UPDATE_CURRENT_ETAS,
+        etas: etas2.data.root.station,
+        routes,
+        route
+      });
+      const etas4 = getState().etas;
+      console.log(etas4);
+      return etas4;
     })
   );
 

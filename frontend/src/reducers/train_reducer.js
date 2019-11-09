@@ -89,7 +89,7 @@ export const ROUTES = {
     abbreviation: ["RICH"]
   }
 };
-const trainsReducer = (state = {}, action) => {
+const trainsReducer = (state = [], action) => {
   Object.freeze(state);
   switch (action.type) {
     case CREATE_TRAINS:
@@ -297,20 +297,25 @@ const trainsReducer = (state = {}, action) => {
         trains3.push(ele);
       });
 
-      const routeTrains = Object.assign({}, { [route.number]: trains3 });
-      console.log(routeTrains);
+      // const routeTrains = Object.assign({}, { [route.number]: trains3 });
+      const newState = [...state, ...trains3];
+      console.log(newState);
 
-      return merge({}, state, { [route.number]: trains3 });
+      return newState;
 
     case REMOVE_TRAINS:
       const routeNum4 = action.routeNum;
       const allUpdatedTrains = [];
-      const curTrains = state[routeNum4];
+      const curTrains = [...state];
+
+      const updTrains = curTrains.filter(ele => {
+        return ele.route !== routeNum4;
+      });
       // curTrains = Object.assign({}, allUpdatedTrains);
 
       // const newTrainsforRoute = { [routeNum4]: curTrains };
 
-      return { ...state, [routeNum4]: allUpdatedTrains };
+      return { updTrains };
     case REMOVE_TRAIN:
       const routeNum5 = action.routeNum;
       const id = action.id;
@@ -511,9 +516,9 @@ const trainsReducer = (state = {}, action) => {
     case UPDATE_TRAINS:
       const etas = action.etas;
 
-      let allTrains = state[action.routeNum].slice();
+      let allTrains = [...state];
 
-      let stations = action.stations;
+      let routes = action.routes;
       // if (action.routeNum === "2") {
       //   stations = action.stations.slice(0, -3);
       // } else if (action.routeNum === "1") {
@@ -521,11 +526,14 @@ const trainsReducer = (state = {}, action) => {
       // } else {
       //   stations = action.stations.slice(0, -1);
       // }
-      let stationLength = stations.length - 1;
+
       const updatedTrains = [];
 
       allTrains.map((train, idx) => {
         console.log(train);
+        let routeNum = train.route;
+        let stations = routes[routeNum].stations;
+        let stationLength = stations.length - 1;
         let lastMinutes = train.minutes;
         let trainDestination = train.dest;
         let direction = train.direction;
@@ -650,25 +658,28 @@ const trainsReducer = (state = {}, action) => {
         }
       });
 
-      let sorted = updatedTrains.sort((a, b) =>
-        a.stationIdx > b.stationIdx ? 1 : -1
-      );
-      let updatedSorted = [];
-      console.log(allTrains, updatedTrains);
+      // let sorted = updatedTrains.sort((a, b) =>
+      //   a.stationIdx > b.stationIdx ? 1 : -1
+      // );
+      // let updatedSorted = [];
+      // console.log(allTrains, updatedTrains);
 
-      sorted.map((ele, idx) => {
-        if (idx === 0) {
-          ele["firstTrain"] = true;
-        } else {
-          ele["firstTrain"] = false;
-        }
-        updatedSorted.push(ele);
-      });
-      console.log(allTrains, updatedSorted);
-      let abc = uniqBy(updatedSorted, "stationName");
-      console.log(abc);
-      const newObj = Object.assign({}, { [action.routeNum]: abc });
-      return merge({}, state, newObj);
+      // sorted.map((ele, idx) => {
+      //   if (idx === 0) {
+      //     ele["firstTrain"] = true;
+      //   } else {
+      //     ele["firstTrain"] = false;
+      //   }
+      //   updatedSorted.push(ele);
+      // });
+      //console.log(allTrains, updatedSorted);
+      // let abc = uniqBy(updatedSorted, "stationName");
+      //console.log(abc);
+      // const newObj = Object.assign({}, { [action.routeNum]: abc });
+
+      console.log(updatedTrains);
+
+      return updatedTrains;
 
     default:
       return state;

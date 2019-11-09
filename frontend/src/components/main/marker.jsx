@@ -59,13 +59,16 @@ const NewMarker = React.memo(
       }
     }, []);
 
-    const routeStations = props.routeStations;
-    const waypoints = routeStations[props.stationIndex - 1].slice;
+    // const routeStations = props.routeStations;
+    // const waypoints = routeStations[props.stationIndex - 1].slice;
 
     const totalTime = useMemo(() => {
       // if (!props.initialPos) {
       //   animated.current = null;
       // }
+      if (props.minutes === "Leaving" && props.stationIndex === 0) {
+        return;
+      }
       const routeStations = props.routeStations;
       const waypoints = routeStations[props.stationIndex - 1].slice;
       const polyline = L.polyline(waypoints);
@@ -112,12 +115,13 @@ const NewMarker = React.memo(
     }, [props.minutes]);
 
     useLayoutEffect(() => {
-      const routeStations2 = props.routeStations;
-      const waypoints2 = routeStations2[props.stationIndex - 1].slice;
       console.log(props.minutes, props.totalTime);
       if (minutesRef.current == null || animated.current) {
         return;
       }
+
+      const routeStations2 = props.routeStations;
+      const waypoints2 = routeStations2[props.stationIndex - 1].slice;
 
       // if (
       //   props.totalTime &&

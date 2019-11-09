@@ -1,13 +1,15 @@
 import {
   RECEIVE_STATIONS,
   RECEIVE_CURRENT_ETAS,
-  RECEIVE_STATION_ETA
+  RECEIVE_STATION_ETA,
+  UPDATE_CURRENT_ETAS
 } from "../actions/station_actions";
 import merge from "lodash/merge";
+import findIndex from "lodash/findIndex";
 import cloneDeep from "lodash/cloneDeep";
 
 const recentEtasReducer = (state = {}, action) => {
-  Object.freeze(state);
+  // Object.freeze(state);
   // let newState = Object.assign({}, state)
 
   switch (action.type) {
@@ -32,6 +34,32 @@ const recentEtasReducer = (state = {}, action) => {
         });
       });
       return merge({}, state, results);
+
+    case UPDATE_CURRENT_ETAS:
+      const receivedETAS = action.etas.slice();
+      const oldETAS = cloneDeep(state);
+      console.log(oldETAS);
+
+      receivedETAS.map(eta => {
+        let station = eta.abbr;
+        console.log(station);
+        let currentStation = oldETAS[station];
+        console.log(currentStation);
+        let currentDepartures = currentStation.etd;
+
+        eta.etd.map((ele, idx) => {
+          let dest = ele.abbreviation;
+          let index = findIndex(currentDepartures, function(o) {
+            return dest === o.abbreviation;
+          });
+          console.log(index, dest, currentDepartures);
+          if (index > -1) {
+            return (currentDepartures[index].estimate = ele.estimate);
+          }
+        });
+      });
+
+      return merge({}, state, oldETAS);
     // case RECEIVE_STATION_ETA:
     //   const currentStation = state[action.abbr];
 

@@ -4,6 +4,7 @@ import {
   receiveWayPoints,
   fetchRoutes,
   getCurrentEtas,
+  refetchCurrentEtas,
   fetchRouteStations,
   fetchRouteSchedules,
   createTrains,
@@ -20,7 +21,8 @@ import MainPage from "./main_page";
 const mapStateToProps = state => {
   return {
     routes: state.routes,
-    trains: createInitialPosition(state),
+    // trains: createInitialPosition(state),
+    trains: state.trains,
     waypoints: state.waypoints,
     allStations: state.stations,
     etas: state.etas,
@@ -32,6 +34,8 @@ const mapDispatchToProps = dispatch => {
   return {
     fetchRoutes: () => dispatch(fetchRoutes()),
     getCurrentEtas: (routes, route) => dispatch(getCurrentEtas(routes, route)),
+    refetchCurrentEtas: (routes, route) =>
+      dispatch(refetchCurrentEtas(routes, route)),
 
     fetchRouteStations: id => dispatch(fetchRouteStations(id)),
     fetchRouteSchedules: id => dispatch(fetchRouteSchedules(id)),

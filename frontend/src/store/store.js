@@ -13,7 +13,8 @@ import rootReducer from "../reducers/root_reducer";
 const persistenceActionTypes = [
   "ADD_TRAINS",
   "RECEIVE_ROUTE_STATIONS",
-  "UPDATE_TRAINS"
+  "UPDATE_TRAINS",
+  "UPDATE_CURRENT_ETAS"
 ];
 
 const persistenceMiddleware = store => dispatch => action => {
@@ -25,16 +26,17 @@ const persistenceMiddleware = store => dispatch => action => {
     if (action.type === "RECEIVE_CURRENT_ETAS") {
       let newState = store.getState();
       handleTrains(action, store, newState);
-    }
-    if (action.type === "RECEIVE_ROUTE_STATIONS") {
+    } else if (action.type === "RECEIVE_ROUTE_STATIONS") {
       let newState = store.getState();
       handleWaypoints(action, store, newState);
+    } else if (action.type === "UPDATE_CURRENT_ETAS") {
+      //   console.count();
+      //   let newState = store.getState();
+      //   handleNewTrains(action, store, newState);
+      // }'
+      let newState = store.getState();
+      handleUpdate(action, store, newState);
     }
-    // if (action.type === "UPDATE_TRAINS") {
-    //   console.count();
-    //   let newState = store.getState();
-    //   handleNewTrains(action, store, newState);
-    // }
   }
   return result;
 };
@@ -56,16 +58,17 @@ const handleWaypoints = (action, store, newState) => {
 //   }, 20000);
 // };
 
-const updateRoute = (action, store, newState) => {
+const handleUpdate = (action, store, newState) => {
   // const routeTrains = store.getState().trains[action.route.number];
-  const routeStations = store.getState().routes[action.route.number].stations;
+  const routes = store.getState().routes;
   const allEtas2 = store.getState().etas;
-  const allTrains2 = store.getState().trains[action.route.number];
-
-  let num = action.route.number;
-  console.log(num);
-
-  store.dispatch(updateTrains(num, allEtas2, routeStations));
+  const allTrains2 = store.getState().trains;
+  console.log(allTrains2);
+  //let num = action.route.number;
+  //console.log(num);
+  if (allTrains2.length > 0) {
+    store.dispatch(updateTrains(routes, allEtas2));
+  }
 };
 
 const handleTrains = (action, store, newState) => {

@@ -235,8 +235,7 @@ class MainPage extends Component {
 
     console.count();
 
-    // this.props
-    //   .getCurrentEtas()
+    this.props.getCurrentEtas();
     //   .then(response => this.setState({ etas: this.props.etas }));
 
     // this.props.fetchRouteSchedules(1);
@@ -452,31 +451,31 @@ class MainPage extends Component {
     this.interval = setInterval(() => {
       console.count();
       //this.tick();
-      if (this.state.update > 0) {
-        this.props.getCurrentEtas().then(value => {
-          this.setState(prev => {
-            if (prev.etas !== value) {
-              let currentSelections = prev.currentSelections;
-              if (currentSelections.length > 0) {
-                currentSelections.forEach((el, i) => {
-                  setTimeout(() => {
-                    let stations = routes[currentSelections[i].value].stations;
-                    // each loop, call passed in function
-                    // delegate(array[i]);
-                    this.props.updateTrains(
-                      currentSelections[i].value,
-                      value,
-                      stations
-                    );
-
-                    // stagger the timeout for each loop by the index
-                  }, i * 300);
-                });
-              }
-              return { etas: value, update: (prev.update += 1) };
-            }
-          });
-        });
+      {
+        this.props.refetchCurrentEtas();
+        // this.props.getCurrentEtas().then(value => {
+        //   this.setState(prev => {
+        //     if (prev.etas !== value) {
+        //       let currentSelections = prev.currentSelections;
+        //       if (currentSelections.length > 0) {
+        //         currentSelections.forEach((el, i) => {
+        //           setTimeout(() => {
+        //             let stations = routes[currentSelections[i].value].stations;
+        //             // each loop, call passed in function
+        //             // delegate(array[i]);
+        //             this.props.updateTrains(
+        //               currentSelections[i].value,
+        //               value,
+        //               stations
+        //             );
+        //             // stagger the timeout for each loop by the index
+        //           }, i * 300);
+        //         });
+        //       }
+        //       return { etas: value, update: (prev.update += 1) };
+        //     }
+        //   });
+        // });
       }
     }, 30000);
   }
@@ -558,7 +557,8 @@ class MainPage extends Component {
     this.setState(prev => {
       console.log(prev);
       if (!prev.currentSelections || prev.currentSelections.length === 0) {
-        this.props.getCurrentEtas().then(etas2 => {
+        this.props.refetchCurrentEtas().then(etas2 => {
+          console.log(etas2);
           let num = value[0].value;
           let route = routes[num];
           let color = route.hexcolor;
