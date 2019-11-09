@@ -14,7 +14,13 @@ import React, {
 import L from "leaflet";
 import NewMarker from "./marker";
 
-const Trains = React.memo(function Trains({ trains, update, getMap, routes }) {
+const Trains = React.memo(function Trains({
+  trains,
+  update,
+  getMap,
+  routes,
+  removeTrain
+}) {
   console.log(update);
   const STEPS = 60 * 1000;
   const refs = useRef([]);
@@ -66,6 +72,8 @@ const Trains = React.memo(function Trains({ trains, update, getMap, routes }) {
             stationIndex={train.stationIdx}
             station={train.stationName}
             minutes={train.minutes}
+            lastTrain={train.lastTrain}
+            removeTrain={removeTrain}
             id={train.id}
             totalTime={train.totalMinutes}
             initialPos={train.initialPosition}

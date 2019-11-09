@@ -171,10 +171,9 @@ const receiveRouteSchedules = (schedules, id) => ({
   id
 });
 
-export const addTrains = (route, trains, etas) => ({
+export const addTrains = (routes, etas) => ({
   type: ADD_TRAINS,
-  route,
-  trains,
+  routes,
   etas
 });
 export const removeTrains = routeNum => ({
@@ -182,10 +181,9 @@ export const removeTrains = routeNum => ({
 
   routeNum
 });
-export const removeTrain = (routeNum, id) => ({
+export const removeTrain = id => ({
   type: REMOVE_TRAIN,
 
-  routeNum,
   id
 });
 export const buildWayPoints = routeNum => ({

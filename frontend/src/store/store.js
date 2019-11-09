@@ -36,6 +36,9 @@ const persistenceMiddleware = store => dispatch => action => {
       // }'
       let newState = store.getState();
       handleUpdate(action, store, newState);
+    } else if (action.type === "UPDATE_TRAINS") {
+      let newState = store.getState();
+      handleTrains(action, store, newState);
     }
   }
   return result;
@@ -72,15 +75,11 @@ const handleUpdate = (action, store, newState) => {
 };
 
 const handleTrains = (action, store, newState) => {
-  const routeIds = [1, 2, 3, 4, 5, 6, 7, 8];
-  const allRoutes = store.getState().routes;
-  const allEtas = store.getState().etas;
-  console.log(allEtas);
+  const routes3 = store.getState().routes;
+  const allEtas3 = store.getState().etas;
 
-  if (action.routes === "create") {
-    let route = allRoutes[action.route];
-    store.dispatch(createTrains(route, allEtas));
-  }
+  store.dispatch(addTrains(routes3, allEtas3));
+
   // } else if (action.routes === "update") {
   //   let stations = allRoutes[action.route].stations;
   //   store.dispatch(updateTrains(action.route, allEtas, stations));

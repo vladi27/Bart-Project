@@ -10,7 +10,8 @@ import {
   createTrains,
   updateTrains,
   addTrains,
-  removeTrains
+  removeTrains,
+  removeTrain
 } from "../../actions/station_actions";
 import getCombinedState from "../../selectors/loading_selector";
 import debounceRender from "react-debounce-render";
@@ -40,6 +41,7 @@ const mapDispatchToProps = dispatch => {
     fetchRouteStations: id => dispatch(fetchRouteStations(id)),
     fetchRouteSchedules: id => dispatch(fetchRouteSchedules(id)),
     removeTrains: routeNum => dispatch(removeTrains(routeNum)),
+    removeTrain: id => dispatch(removeTrain(id)),
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
 
     createTrains: (route, etas) => dispatch(createTrains(route, etas)),

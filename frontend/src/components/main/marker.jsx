@@ -13,7 +13,7 @@ import React, {
 import L from "leaflet";
 import * as util from "leaflet-geometryutil";
 
-import { Marker, Polyline } from "react-leaflet";
+import { Marker, Polyline, Popup } from "react-leaflet";
 import { divIcon } from "leaflet";
 //import { useWorker } from "react-hooks-worker";
 
@@ -44,6 +44,8 @@ const NewMarker = React.memo(
     const polyLineRef = React.useRef();
     const currentTime = React.useRef();
     const minutes = props.minutes;
+    const lastTrain = props.lastTrain;
+    const id = props.id;
     //const mapRef = props.getMap();
     console.log(mapRef);
 
@@ -260,8 +262,13 @@ const NewMarker = React.memo(
         const currentPoly = polyLineRef.current.getLatLngs();
         console.log(currentPoly, ratio, mapRef2.current);
 
+        if (ratio >= 0.95 && lastTrain && minutes === "1") {
+          props.removeTrain(id);
+          animated.current = null;
+        }
+
         if (
-          ratio === 1 &&
+          ratio >= 1 &&
           minutesRef.current === "Leaving" &&
           animated.current
         ) {
@@ -617,7 +624,15 @@ const NewMarker = React.memo(
         key={props.id}
         // onClick={handleActiveVehicleUpdate(plate, coors)}
         ref={markerRef}
-      ></Marker>
+      >
+        <Popup>
+          <span>
+            {" "}
+            Next Station: <strong>{props.station}</strong> <br />
+            Minutes: <strong>{props.minutes}</strong>
+          </span>
+        </Popup>
+      </Marker>
       // </Polyline>
     );
   })

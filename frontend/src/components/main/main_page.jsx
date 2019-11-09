@@ -838,6 +838,7 @@ class MainPage extends Component {
                     <Trains
                       trains={trains}
                       update={update}
+                      removeTrain={this.props.removeTrain}
                       getMap={this.getMap.bind(this)}
                       routes={routes}
                     />
