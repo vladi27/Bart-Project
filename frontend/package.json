@@ -9,10 +9,10 @@
     "@turf/turf": "^5.1.6",
     "array-flatten": "^2.1.2",
     "axios": "^0.19.0",
+    "chroma-js": "^2.1.0",
     "date-and-time": "^0.9.0",
     "geodist": "^0.2.1",
     "geolib": "^3.0.4",
-    
     "in-range": "^2.0.0",
     "json-loader": "^0.5.7",
     "jwt-decode": "^2.2.0",
@@ -22,7 +22,6 @@
     "leaflet.awesome-markers": "^2.0.5",
     "lodash.indexof": "^4.0.5",
     "memoize-one": "^5.1.1",
-   
     "re-reselect": "^3.4.0",
     "react": "^16.9.0",
     "react-debounce-render": "^5.0.0",
@@ -60,7 +59,5 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "devDependencies": {
-    
-  }
+  "devDependencies": {}
 }

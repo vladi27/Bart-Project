@@ -49,6 +49,12 @@ const NewMarker = React.memo(
     //const mapRef = props.getMap();
     console.log(mapRef);
 
+    let inits = { lat: 0, lng: 0 };
+
+    if (props.initialPos && props.minutes === "Leaving") {
+      inits = props.initCoords;
+    }
+
     useEffect(() => {
       if (renderRef.current !== 1);
       {
@@ -57,7 +63,7 @@ const NewMarker = React.memo(
         console.log(mref);
         renderRef.current = 1;
 
-        setMapRef(mref);
+        //setMapRef(mref);
       }
     }, []);
 
@@ -68,11 +74,17 @@ const NewMarker = React.memo(
       // if (!props.initialPos) {
       //   animated.current = null;
       // }
-      if (props.minutes === "Leaving" && props.stationIndex === 0) {
+      if (
+        (props.minutes === "Leaving" && props.stationIndex === 0) ||
+        (props.initialPos && props.minutes === "Leaving")
+      ) {
         return;
       }
+
       const routeStations = props.routeStations;
       const waypoints = routeStations[props.stationIndex - 1].slice;
+      // const dest2 = routeStations[props.stationIndex - 1].location;
+      // waypoints.unshift(dest2);
       const polyline = L.polyline(waypoints);
       const dest = routeStations[props.stationIndex].location;
       var lat = parseFloat(dest[0]),
@@ -81,26 +93,57 @@ const NewMarker = React.memo(
       polyline.addLatLng(point);
 
       console.log(polyline);
-      polyLineRef.current = polyline;
 
+      if (props.initialPos && props.minutes !== "Leaving") {
+        const mapRef = props.getMap();
+        //let center = polyline.getCenter();
+        const newPolyline = util.extract(
+          mapRef.current.leafletElement,
+          polyline,
+          0.5,
+          1
+        );
+        polyline.setLatLngs(newPolyline);
+        polyLineRef.current = polyline;
+        console.log(polyline);
+        startTime.current = 0;
+        currentTime.current = props.totalTime * 60 * 1000;
+        animated.current = true;
+        return props.minutes;
+      } else if (!props.initialPos) {
+        const currentPosition = markerRef.current.leafletElement.getLatLng();
+        const ratio = util.locateOnLine(
+          mapRef2.current.current.leafletElement,
+          polyline,
+          currentPosition
+        );
+        const newPolyline2 = util.extract(
+          mapRef2.current.current.leafletElement,
+          polyline,
+          ratio,
+          1
+        );
+        polyline.setLatLngs(newPolyline2);
+        polyLineRef.current = polyline;
+        startTime.current = 0;
+        currentTime.current = props.totalTime * 60 * 1000;
+        animated.current = true;
+        return props.minutes;
+      }
       // if (mapRef2.current) {
       //   console.log(mapRef2);
       //   mapRef2.current.current.leafletElement.fitBounds(polyline.getBounds());
       // }
 
-      startTime.current = 0;
-
       console.log(currentTime);
 
-      if (
-        (props.initialPos && props.minutes !== "Leaving") ||
-        !props.initialPos
-      ) {
-        currentTime.current = props.totalTime * 60 * 1000;
-        animated.current = true;
-      }
-
-      return props.minutes;
+      // if (
+      //   (props.initialPos && props.minutes !== "Leaving") ||
+      //   !props.initialPos
+      // ) {
+      //   currentTime.current = props.totalTime * 60 * 1000;
+      //   animated.current = true;
+      // }
 
       //return props.totalTime * 60 * 1000;
     }, [props.station]);
@@ -191,7 +234,8 @@ const NewMarker = React.memo(
       className: `custom-div-icon${props.color.slice(1)}`,
       html: `<div style="${styles}"></div><i class="fas fa-subway"></i>`,
       iconSize: [30, 42],
-      iconAnchor: [15, 42]
+      iconAnchor: [15, 42],
+      popupAnchor: [0, -30]
     });
     //const stationSlice = routeStations[index - 1].slice;
     //const leavingPos = stationSlice[stationSlice.length - 1];
@@ -243,7 +287,8 @@ const NewMarker = React.memo(
 
     useImperativeHandle(ref, () => ({
       update(t) {
-        if (animated.current == null || mapRef == null) {
+        console.log(props.zoom);
+        if (animated.current == null || mapRef2.current == null || props.zoom) {
           return;
         }
 
@@ -617,9 +662,7 @@ const NewMarker = React.memo(
       <Marker
         icon={iconTrain}
         position={
-          !markerRef.current
-            ? props.initCoords
-            : markerRef.current.leafletElement._latlng
+          !markerRef.current ? inits : markerRef.current.leafletElement._latlng
         }
         key={props.id}
         // onClick={handleActiveVehicleUpdate(plate, coors)}
@@ -629,7 +672,8 @@ const NewMarker = React.memo(
           <span>
             {" "}
             Next Station: <strong>{props.station}</strong> <br />
-            Minutes: <strong>{props.minutes}</strong>
+            Minutes: <strong>{props.minutes}</strong> <br />
+            Destination: <strong>{props.destination}</strong>
           </span>
         </Popup>
       </Marker>

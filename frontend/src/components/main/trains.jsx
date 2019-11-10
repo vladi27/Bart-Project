@@ -8,39 +8,31 @@ import React, {
   useMemo,
   useRef,
   useReducer,
-  useCallback
+  useCallback,
+  useImperativeHandle
 } from "react";
 
 import L from "leaflet";
 import NewMarker from "./marker";
 
-const Trains = React.memo(function Trains({
-  trains,
-  update,
-  getMap,
-  routes,
-  removeTrain
-}) {
-  console.log(update);
-  const STEPS = 60 * 1000;
-  const refs = useRef([]);
+const Trains = React.memo(
+  React.forwardRef(function Trains(props, ref) {
+    //console.log(update);
 
-  console.log(trains);
-  let startTime = 0;
+    const STEPS = 60 * 1000;
+    const refs = useRef([]);
+    const zoomRef = useRef(null);
 
-  useLayoutEffect(() => {
-    // if (!refs) {
-    //   return;
-    // }
+    console.log(trains);
+    let startTime = 0;
+    let frameId = null;
+    const trains = props.trains;
 
-    console.log(refs);
-
-    // console.log(timeStep);
     const animate = timestamp => {
       // const runtime = timestamp - startTime;
       // const timeStep = Math.round(runtime);
       refs.current.map(child => {
-        if (child) {
+        if (child && !zoomRef.current) {
           console.log(child);
           child.update(timestamp);
         }
@@ -50,50 +42,74 @@ const Trains = React.memo(function Trains({
         L.Util.requestAnimFrame(animate);
       }, 1000 / 10);
     };
-    //cancelAnimationFrame(frameId);
-    const frameId = L.Util.requestAnimFrame(t => {
-      //startTime = t;
-      animate(t);
-    });
 
-    return () => L.Util.cancelAnimFrame(frameId);
-  }, []);
+    useImperativeHandle(ref, () => ({
+      updateZoom() {
+        const bool = zoomRef.current;
+        console.log(bool);
+        zoomRef.current = !bool;
+      }
+    }));
 
-  return (
-    <>
-      {trains.map((train, index) => {
-        let num = train.route;
-        let routeStations = routes[num].stations;
-        return (
-          <NewMarker
-            key={train.id}
-            color={train.hexcolor}
-            routeStations={routeStations}
-            stationIndex={train.stationIdx}
-            station={train.stationName}
-            minutes={train.minutes}
-            lastTrain={train.lastTrain}
-            removeTrain={removeTrain}
-            id={train.id}
-            totalTime={train.totalMinutes}
-            initialPos={train.initialPosition}
-            initCoords={train.initCoords}
-            currentSlice={train.currentSlice}
-            ref={ins => (refs.current[index] = ins)}
-            getMap={getMap}
-          />
-        );
-      })}
-    </>
-  );
-  // <NewMarker
-  //   key={trains.id}
-  //   color={train.hexcolor}
-  //   station={train.stationName}
-  //   minutes={train.minutes}
-  //   id={train.id}
-  //   currentSlice={train.currentSlice}
-  // />
-});
+    useLayoutEffect(() => {
+      // if (!refs) {
+      //   return;
+      // }
+
+      console.log(refs);
+      if (!frameId) {
+        // console.log(timeStep);
+        //cancelAnimationFrame(frameId);
+        frameId = L.Util.requestAnimFrame(t => {
+          //startTime = t;
+          animate(t);
+        });
+      }
+
+      return () => {
+        L.Util.cancelAnimFrame(frameId);
+        frameId = null;
+      };
+    }, []);
+
+    return (
+      <>
+        {trains.map((train, index) => {
+          let num = train.route;
+          let routeStations = props.routes[num].stations;
+          return (
+            <NewMarker
+              key={train.id}
+              color={train.hexcolor}
+              routeStations={routeStations}
+              stationIndex={train.stationIdx}
+              station={train.stationName}
+              minutes={train.minutes}
+              lastTrain={train.lastTrain}
+              destination={train.dest}
+              removeTrain={props.removeTrain}
+              id={train.id}
+              totalTime={train.totalMinutes}
+              initialPos={train.initialPosition}
+              initCoords={train.initCoords}
+              currentSlice={train.currentSlice}
+              ref={ins => (refs.current[index] = ins)}
+              getMap={props.getMap}
+              //zoom={zoom}
+            />
+          );
+        })}
+      </>
+    );
+    // <NewMarker
+    //   key={trains.id}
+    //   color={train.hexcolor}
+    //   station={train.stationName}
+    //   minutes={train.minutes}
+    //   id={train.id}
+    //   currentSlice={train.currentSlice}
+    // />
+  })
+);
 
 export default Trains;

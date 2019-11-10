@@ -340,11 +340,13 @@ const trainsReducer = (state = [], action) => {
       const currentEtas2 = action.etas;
       const newTrain5 = [];
       const currentRoutes = action.routes;
+      console.log(curFirstTrains);
 
       curFirstTrains.map((train, idx) => {
         let num = train.route;
         let stations = currentRoutes[num].stations;
         let trainDest = train.destination;
+
         let trainID = train.id;
         let trainHexcolor = train.hexcolor;
 
@@ -352,6 +354,7 @@ const trainsReducer = (state = [], action) => {
         //let minutes = train.minutes;
         let routeDestination2 = ROUTES[num].abbreviation;
         let stationSlice = stations.slice(0, stationIndex);
+        console.log(stationSlice);
         if (stationSlice.length > 0) {
           return stationSlice.map((station, idx4) => {
             let stationName2 = station.stationName;
@@ -406,7 +409,7 @@ const trainsReducer = (state = [], action) => {
           return;
         }
       });
-
+      console.log(newTrain5);
       const newT6 = [...newTrain5, ...currentTrains5];
       return newT6;
 

@@ -211,6 +211,8 @@ class MainPage extends Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.mapRef = React.createRef();
     this.bounds = null;
+    this.zoom = null;
+    this.trainsRef = React.createRef();
 
     //this.customFilter = this.customFilter.bind(this);
   }
@@ -624,6 +626,13 @@ class MainPage extends Component {
     //   return this.setState({ fetchData: false });
     // }
   }
+
+  handleZoomStart() {
+    this.trainsRef.current.updateZoom();
+  }
+  handleZoomEnd() {
+    this.trainsRef.current.updateZoom();
+  }
   // handleChange(value) {
   //   let difference = [];
 
@@ -754,6 +763,7 @@ class MainPage extends Component {
     console.log(this.state);
     console.log(trains);
     console.log(uniques, hexcolors);
+    console.log(this.zoom);
     // console.count();
     // console.log(this.props.routes);
 
@@ -779,7 +789,7 @@ class MainPage extends Component {
     } else {
       //this.mapRef.current.leafletElement.setMaxBounds
       return (
-        <div>
+        <div id="all">
           {/* <div className="react-select__menu">
             <WindowedSelect
               options={options}
@@ -816,34 +826,38 @@ class MainPage extends Component {
             wheelDebounceTime={60}
             animate={true}
             zoom={11}
+            onzoomstart={this.handleZoomStart.bind(this)}
+            onzoomend={this.handleZoomEnd.bind(this)}
+            //markerZoomAnimation={false}
             //maxZoom={13}
             //minZoom={12}
             //maxBounds={bounds}
             preferCanvas={true}
             ref={this.mapRef}
           >
-            <div>
-              {currentSelections && trains.length > 0 ? (
+            {currentSelections && trains.length > 0 ? (
+              <React.Fragment>
                 <React.Fragment>
-                  <React.Fragment>
-                    <RouteStations
-                      currentRoutes={currentSelections}
-                      routes={routes}
-                    />
-                    <Polylines
-                      currentRoutes={currentSelections}
-                      routes={routes}
-                      waypoints={this.props.waypoints}
-                    />
-                    <Trains
-                      trains={trains}
-                      update={update}
-                      removeTrain={this.props.removeTrain}
-                      getMap={this.getMap.bind(this)}
-                      routes={routes}
-                    />
-                  </React.Fragment>
-                  {/* {trains.map((train, idx) => {
+                  <RouteStations
+                    currentRoutes={currentSelections}
+                    routes={routes}
+                  />
+                  <Polylines
+                    currentRoutes={currentSelections}
+                    routes={routes}
+                    waypoints={this.props.waypoints}
+                  />
+                  <Trains
+                    trains={trains}
+                    update={update}
+                    ref={this.trainsRef}
+                    removeTrain={this.props.removeTrain}
+                    getMap={this.getMap.bind(this)}
+                    routes={routes}
+                    zoom={this.zoom}
+                  />
+                </React.Fragment>
+                {/* {trains.map((train, idx) => {
                     console.log(train);
                     let minutes = train.minutes;
                     let color = train.color;
@@ -881,9 +895,8 @@ class MainPage extends Component {
                       ></NewMarker>
                     );
                   })} */}
-                </React.Fragment>
-              ) : null}
-            </div>
+              </React.Fragment>
+            ) : null}
             {/* {currentSelections ? (
               <div>
                 {this.renderStops()}
@@ -893,7 +906,6 @@ class MainPage extends Component {
             <TileLayer url="https://mt1.google.com/vt/lyrs=m@121,transit|vm:1&hl=en&opts=r&x={x}&y={y}&z={z}" />
             />
           </Map>
-          ; })
         </div>
       );
     }

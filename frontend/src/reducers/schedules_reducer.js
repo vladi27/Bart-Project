@@ -3,7 +3,7 @@ import {
   RECEIVE_ROUTE_SCHEDULES
 } from "../actions/station_actions";
 import merge from "lodash/merge";
-import moment from "moment";
+//import moment from "moment";
 const toTime = require("to-time");
 
 const ROUTELENGTH = {
