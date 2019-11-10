@@ -661,6 +661,7 @@ const NewMarker = React.memo(
       // <Polyline positions={waypoints} ref={polyLineRef}>
       <Marker
         icon={iconTrain}
+        // autoPan={false}
         position={
           !markerRef.current ? inits : markerRef.current.leafletElement._latlng
         }
@@ -668,7 +669,7 @@ const NewMarker = React.memo(
         // onClick={handleActiveVehicleUpdate(plate, coors)}
         ref={markerRef}
       >
-        <Popup>
+        <Popup autoClose={false} closeOnClick={false} autoPan={false}>
           <span>
             {" "}
             Next Station: <strong>{props.station}</strong> <br />

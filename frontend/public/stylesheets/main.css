@@ -19,7 +19,8 @@
   /* background: blue; */
   width: 100%;
   height: 100%;
-  position: relative;
+  position: fixed;
+  overflow: hidden;
   display: flex;
   flex-flow: column wrap;
 }
@@ -29,15 +30,13 @@
   /* margin-top: 50px; */
   margin-right: 2px;
   width: 100%;
-  /* //height: 100%; */
-  position: relative;
+  position: absolute;
 }
 .leaflet-container {
-  overflow: hidden;
-  height: 1200px;
+  height: 100%;
   width: 100%;
   margin-top: 50px;
-  position: absolute;
+  position: relative;
 }
 
 .custom-div-iconffff33 i {
