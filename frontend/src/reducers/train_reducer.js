@@ -10,12 +10,19 @@ import {
   REMOVE_TRAINS,
   REMOVE_TRAIN
 } from "../actions/station_actions";
-import { lineString, along, lineDistance, lineChunk } from "@turf/turf";
+import {
+  lineString,
+  along,
+  lineDistance,
+  lineChunk,
+  transformScale
+} from "@turf/turf";
 import findIndex from "lodash/findIndex";
 
 import find from "lodash/find";
 import memoizeOne from "memoize-one";
-import uniqBy from "lodash/uniq";
+import uniqBy from "lodash/uniqBy";
+import uniqWith from "lodash/uniqWith";
 
 const uuidv4 = require("uuid/v4");
 const OPTIONS = { units: "kilometers" };
@@ -390,6 +397,7 @@ const trainsReducer = (state = [], action) => {
                     firstTrain: true,
                     id,
                     initCoords: station.location,
+                    id2: String(num) + String(station),
                     route: num,
                     // pos: station.location,
                     initialPosition: true
@@ -410,7 +418,15 @@ const trainsReducer = (state = [], action) => {
         }
       });
       console.log(newTrain5);
-      const newT6 = [...newTrain5, ...currentTrains5];
+      const uniques = uniqBy(newTrain5, "id2");
+      const newT6 = [...uniques, ...currentTrains5];
+      // const uniques = uniqWith(
+      //   newT6,
+      //   (trainA, trainB) =>
+      //     (trainA.route === trainB.route &&
+      //       trainA.stationName !== trainB.stationName) ||
+      //     trainA.route !== trainB.route
+      // );
       return newT6;
 
     // const currentRouteHexcolor = currentRoute.hexcolor;

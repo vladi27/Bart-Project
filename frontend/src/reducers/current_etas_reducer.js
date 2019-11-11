@@ -45,18 +45,34 @@ const recentEtasReducer = (state = {}, action) => {
         console.log(station);
         let currentStation = oldETAS[station];
         console.log(currentStation);
-        let currentDepartures = currentStation.etd;
-
-        eta.etd.map((ele, idx) => {
-          let dest = ele.abbreviation;
-          let index = findIndex(currentDepartures, function(o) {
-            return dest === o.abbreviation;
+        if (!currentStation) {
+          let newEle = JSON.parse(JSON.stringify(eta));
+          eta.etd.forEach((ele2, idx) => {
+            let obj = {
+              hexcolor: ele2.estimate[0].hexcolor,
+              direction: ele2.estimate[0].direction
+            };
+            console.log(ele2, eta);
+            let ele3 = Object.assign({}, ele2, obj);
+            newEle["etd"][idx] = ele3;
+            console.log(newEle);
+            let ele5 = Object.assign({}, newEle);
+            return (oldETAS[station] = ele5);
           });
-          console.log(index, dest, currentDepartures);
-          if (index > -1) {
-            return (currentDepartures[index].estimate = ele.estimate);
-          }
-        });
+        } else {
+          let currentDepartures = currentStation.etd;
+
+          eta.etd.map((ele, idx) => {
+            let dest = ele.abbreviation;
+            let index = findIndex(currentDepartures, function(o) {
+              return dest === o.abbreviation;
+            });
+            console.log(index, dest, currentDepartures);
+            if (index > -1) {
+              return (currentDepartures[index].estimate = ele.estimate);
+            }
+          });
+        }
       });
 
       return merge({}, state, oldETAS);

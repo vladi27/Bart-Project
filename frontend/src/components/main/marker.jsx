@@ -161,7 +161,11 @@ const NewMarker = React.memo(
 
     useLayoutEffect(() => {
       console.log(props.minutes, props.totalTime);
-      if (minutesRef.current == null || animated.current) {
+      if (
+        minutesRef.current == null ||
+        animated.current ||
+        props.minutes !== minutesRef.current
+      ) {
         return;
       }
 
@@ -323,10 +327,12 @@ const NewMarker = React.memo(
             currentPoly,
             ratio
           );
-          console.log(pos, props.station, props.minutes);
-          const { latLng } = pos;
-          console.log(latLng, props.stataton, props.minutes);
-          markerRef.current.leafletElement.setLatLng(latLng);
+          if (pos) {
+            const { latLng } = pos;
+            console.log(latLng, props.stataton, props.minutes);
+            markerRef.current.leafletElement.setLatLng(latLng);
+          }
+
           animated.current = null;
           //setAnimated(null);
         } else if (ratio < 1 && animated.current && !props.zoom) {
@@ -372,6 +378,13 @@ const NewMarker = React.memo(
         // }
       }
     }));
+
+    // useImperativeHandle(ref, () => ({
+    //   checkAnim() {
+    //     let stat = animated.current;
+    //     return stat;
+    //   }
+    // }));
 
     // const arc = useMemo(() => {
     //   if (minutes === "Leaving") {

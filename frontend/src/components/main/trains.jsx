@@ -35,6 +35,11 @@ const Trains = React.memo(
         if (child && !zoomRef.current) {
           console.log(child);
           child.update(timestamp);
+          // let status = child.checkAnim();
+          // console.log(status);
+          // if (status) {
+
+          // }
         }
       });
 
