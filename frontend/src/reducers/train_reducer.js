@@ -610,7 +610,7 @@ const trainsReducer = (state = [], action) => {
         let stationLength = stations.length - 1;
         let lastMinutes = train.minutes;
         let trainDestination = train.dest;
-        let direction = train.direction;
+        let trainDirection = train.direction;
         let hexcolor = train.hexcolor;
         let lastStation = train.stationName;
         let nextStationName;
@@ -639,6 +639,23 @@ const trainsReducer = (state = [], action) => {
             });
 
             console.log(nextDepartures, train);
+            let mins;
+            //let totalMins;
+            if (nextDepartures) {
+              mins = nextDepartures.estimate[0].minutes;
+            } else if (!nextDepartures) {
+              let nextDepartures2 = find(nextStationEstimates, {
+                direction: trainDirection,
+                abbreviation: trainDestination
+              });
+              console.log(nextDepartures2);
+              let nextDepartures3 = find(nextDepartures2.estimate, {
+                direction: trainDirection,
+                hexcolor: hexcolor
+              });
+              console.log(nextDepartures3);
+              mins = nextDepartures3.minutes;
+            }
 
             let lastTrain = false;
             if (train.stationIdx + 1 === stationLength) {
@@ -667,9 +684,9 @@ const trainsReducer = (state = [], action) => {
             let newObj = {
               stationName: nextStationName,
               stationIdx: train.stationIdx + 1,
-              minutes: nextDepartures.estimate[0].minutes,
+              minutes: mins,
               // segments,
-              totalMinutes: Number(nextDepartures.estimate[0].minutes),
+              totalMinutes: Number(mins),
               //departures: nextStationEstimates[index3].estimate[0],
               lastTrain,
               //waypoints: results,

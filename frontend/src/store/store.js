@@ -23,20 +23,21 @@ const persistenceMiddleware = store => dispatch => action => {
   const result = dispatch(action);
 
   if (persistenceActionTypes.includes(action.type)) {
-    if (action.type === "RECEIVE_CURRENT_ETAS") {
-      let newState = store.getState();
-      handleTrains(action, store, newState);
-    } else if (action.type === "RECEIVE_ROUTE_STATIONS") {
+    if (action.type === "RECEIVE_ROUTE_STATIONS") {
       let newState = store.getState();
       handleWaypoints(action, store, newState);
-    } else if (action.type === "UPDATE_CURRENT_ETAS") {
+    }
+
+    if (action.type === "UPDATE_CURRENT_ETAS") {
       //   console.count();
       //   let newState = store.getState();
       //   handleNewTrains(action, store, newState);
       // }'
       let newState = store.getState();
       handleUpdate(action, store, newState);
-    } else if (action.type === "UPDATE_TRAINS") {
+    }
+
+    if (action.type === "UPDATE_TRAINS") {
       let newState = store.getState();
       handleTrains(action, store, newState);
     }

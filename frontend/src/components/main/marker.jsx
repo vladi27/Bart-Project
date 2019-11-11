@@ -149,7 +149,7 @@ const NewMarker = React.memo(
     }, [props.station]);
 
     useLayoutEffect(() => {
-      if (!totalTime) {
+      if (!totalTime || props.minutes === minutesRef.current) {
         return;
       }
       if (totalTime !== props.minutes && animated.current) {
@@ -315,29 +315,33 @@ const NewMarker = React.memo(
         if (
           ratio >= 1 &&
           minutesRef.current === "Leaving" &&
-          animated.current
+          animated.current &&
+          !props.zoom
         ) {
           const pos = util.interpolateOnLine(
             mapRef2.current.current.leafletElement,
             currentPoly,
             ratio
           );
-          console.log(pos);
+          console.log(pos, props.station, props.minutes);
           const { latLng } = pos;
-          console.log(latLng);
+          console.log(latLng, props.stataton, props.minutes);
           markerRef.current.leafletElement.setLatLng(latLng);
           animated.current = null;
           //setAnimated(null);
-        } else if (ratio < 1 && animated.current) {
+        } else if (ratio < 1 && animated.current && !props.zoom) {
           const pos = util.interpolateOnLine(
             mapRef2.current.current.leafletElement,
             currentPoly,
             ratio
           );
-          console.log(pos);
-          const { latLng } = pos;
-          console.log(latLng);
-          markerRef.current.leafletElement.setLatLng(latLng);
+          console.log(pos, props.station, props.minutes);
+
+          if (pos) {
+            const { latLng } = pos;
+            console.log(latLng, props.stataton, props.minutes);
+            markerRef.current.leafletElement.setLatLng(latLng);
+          }
         }
 
         // let timeStep = Math.round(runtime);
@@ -672,7 +676,7 @@ const NewMarker = React.memo(
         <Popup autoClose={false} closeOnClick={false} autoPan={false}>
           <span>
             {" "}
-            Next Station: <strong>{props.station}</strong> <br />
+            Station: <strong>{props.station}</strong> <br />
             Minutes: <strong>{props.minutes}</strong> <br />
             Destination: <strong>{props.destination}</strong>
           </span>

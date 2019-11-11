@@ -134,13 +134,14 @@ const SelectorContainer = React.memo(
         <WindowedSelect
           options={options}
           isMulti
+          autosize={true}
           values={values}
           // styles={{ marginBottom: "200px" }}
           styles={
             // Fixes the overlapping problem of the component
             customStyles
           }
-          placeholder={"Select a line to track"}
+          placeholder={"Select BART lines to track"}
           className="basic-multi-select"
           classNamePrefix="select"
           //filterOption={customFilter}

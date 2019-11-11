@@ -227,22 +227,25 @@ class MainPage extends Component {
     // );
     this.props
       .fetchRoutes()
-      .then(response => this.props.fetchRouteStations())
+
       .then(() => {
         routeIds.map(ele => {
           this.props.fetchRouteStations(ele);
-          this.props.fetchRouteSchedules(ele);
+          // this.props.fetchRouteSchedules(ele);
         });
       });
 
     console.count();
-
+    routeIds.map(id => this.props.fetchRouteStations(id));
     this.props.getCurrentEtas();
     //   .then(response => this.setState({ etas: this.props.etas }));
 
     // this.props.fetchRouteSchedules(1);
 
     this.props.receiveWayPoints(jsonObject);
+    setTimeout(() => {
+      this.handleTimer();
+    }, 15000);
     // setTimeout(() => {
     //   this.props.getCurrentEtas("create");
     //   //.then(result => {
@@ -257,12 +260,12 @@ class MainPage extends Component {
     //   // });
     // }, 3000);
 
-    this.setState({
-      seconds: 0,
-      fetchData: false,
-      currentSelections: [],
-      trains: this.props.trains
-    });
+    // this.setState({
+    //   seconds: 0,
+    //   fetchData: false,
+    //   currentSelections: [],
+    //   trains: this.props.trains
+    // });
 
     // this.mapRef.current.leafletElement.locate({
     //   watch: true,
@@ -479,7 +482,7 @@ class MainPage extends Component {
         //   });
         // });
       }
-    }, 30000);
+    }, 15000);
   }
 
   stopTimer() {
@@ -559,23 +562,10 @@ class MainPage extends Component {
     this.setState(prev => {
       console.log(prev);
       if (!prev.currentSelections || prev.currentSelections.length === 0) {
-        this.props.refetchCurrentEtas().then(etas2 => {
-          console.log(etas2);
-          let num = value[0].value;
-          let route = routes[num];
-          let color = route.hexcolor;
-          console.log(color);
-          // let newColor = prev.hexcolors.concat([color]);
-          // console.log(newColor);
-          this.props.createTrains(route, etas2).then(value => {
-            console.log(value);
-            this.handleUpdate();
-          });
-        });
-
         let num = value[0].value;
         let route = routes[num];
         let color = route.hexcolor;
+        this.props.createTrains(route, etas);
         return { currentSelections: value, hexcolors: [color] };
 
         // this.handleTimer();
@@ -628,10 +618,14 @@ class MainPage extends Component {
   }
 
   handleZoomStart() {
-    this.trainsRef.current.updateZoom();
+    if (this.trainsRef.current) {
+      this.trainsRef.current.updateZoom();
+    }
   }
   handleZoomEnd() {
-    this.trainsRef.current.updateZoom();
+    if (this.trainsRef.current) {
+      this.trainsRef.current.updateZoom();
+    }
   }
   // handleChange(value) {
   //   let difference = [];
@@ -819,6 +813,7 @@ class MainPage extends Component {
               // toggleItem={this.handleChange}
             />
           </div> */}
+
           <Map
             watch={true}
             enableHighAccuracy={true}

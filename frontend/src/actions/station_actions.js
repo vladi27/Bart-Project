@@ -140,14 +140,22 @@ const receiveRoutes = routes => {
     routes: routes.data.root.routes.route
   };
 };
-// export const receiveCurrentEtas = (etas, routes, route) => {
-//   return {
-//     type: RECEIVE_CURRENT_ETAS,
-//     etas: etas.data.root.station,
-//     routes,
-//     route
-//   };
-// };
+const receiveCurrentEtas = (etas, routes, route) => {
+  return {
+    type: RECEIVE_CURRENT_ETAS,
+    etas: etas.data.root.station,
+    routes,
+    route
+  };
+};
+const updateCurrentEtas = (etas, routes, route) => {
+  return {
+    type: UPDATE_CURRENT_ETAS,
+    etas: etas.data.root.station,
+    routes,
+    route
+  };
+};
 //  const receiveStationEta = (eta, abbr) => {
 //   return {
 //     type: RECEIVE_STATION_ETA,
@@ -198,6 +206,13 @@ export const updateTrains = (routes, etas) => ({
   etas
 });
 
+export const createTrains = (route, etas, sub) => ({
+  type: CREATE_TRAINS,
+  route,
+  etas,
+  sub
+});
+
 export const receiveWayPoints = jsonObj => ({
   type: RECEIVE_WAYPOINTS,
   waypoints: jsonObj
@@ -208,41 +223,12 @@ export const receiveWayPoints = jsonObj => ({
 //     .then(etas => dispatch(receiveCurrentEtas(etas, routes, route)))
 //     .catch(err => console.log(err));
 
-export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
-  fetchCurrentEtas().then(etas2 =>
-    Promise.resolve().then(() => {
-      dispatch({
-        type: RECEIVE_CURRENT_ETAS,
-        etas: etas2.data.root.station,
-        routes,
-        route
-      });
-      const etas3 = getState().etas;
-      console.log(etas3);
-      return etas3;
-    })
-  );
-export const refetchCurrentEtas = (routes, route) => (dispatch, getState) =>
-  fetchCurrentEtas().then(etas2 =>
-    Promise.resolve().then(() => {
-      dispatch({
-        type: UPDATE_CURRENT_ETAS,
-        etas: etas2.data.root.station,
-        routes,
-        route
-      });
-      const etas4 = getState().etas;
-      console.log(etas4);
-      return etas4;
-    })
-  );
-
-export const createTrains = (route, etas, sub) => (dispatch, getState) =>
-  Promise.resolve().then(() => {
-    dispatch({ type: CREATE_TRAINS, route, etas, sub });
-    const allTrains = getState().trains;
-    return allTrains;
-  });
+// export const createTrains = (route, etas, sub) => (dispatch, getState) =>
+//   Promise.resolve().then(() => {
+//     dispatch({ type: CREATE_TRAINS, route, etas, sub });
+//     const allTrains = getState().trains;
+//     return allTrains;
+//   });
 
 // export const someThenableThunk = someData => (dispatch, getState) => Promise.resolve().then(() => {
 //   const { someReducer } = getState();
@@ -274,6 +260,31 @@ export const fetchRouteStations = id => dispatch =>
   getRouteStations(id)
     .then(stations => dispatch(receiveRouteStations(stations)))
     .catch(err => console.log(err));
+
+export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
+  fetchCurrentEtas()
+    .then(etas => dispatch(receiveCurrentEtas(etas)))
+    .catch(err => console.log(err));
+
+export const refetchCurrentEtas = (routes, route) => (dispatch, getState) =>
+  fetchCurrentEtas()
+    .then(etas => dispatch(updateCurrentEtas(etas)))
+    .catch(err => console.log(err));
+
+// export const getCurrentEtas = (routes, route) => (dispatch, getState) =>
+//   fetchCurrentEtas().then(etas2 =>
+//     Promise.resolve().then(() => {
+//       dispatch({
+//         type: RECEIVE_CURRENT_ETAS,
+//         etas: etas2.data.root.station,
+//         routes,
+//         route
+//       });
+//       const etas3 = getState().etas;
+//       console.log(etas3);
+//       return etas3;
+//     })
+//   );
 
 export const fetchRouteSchedules = id => dispatch =>
   getSchedules(id)
