@@ -43,24 +43,71 @@ const NewMarker = React.memo(
     const mapRef2 = React.useRef(null);
     const polyLineRef = React.useRef();
     const currentTime = React.useRef();
-    const minutes = props.minutes;
-    const lastTrain = props.lastTrain;
-    const id = props.id;
+    const stationRef = React.useRef(null);
+    // const minutes = props.minutes;
+    // const lastTrain = props.lastTrain;
+    // const id = props.id;
+    const {
+      minutes,
+      station,
+      lastTrain,
+      id,
+      totalTime,
+      destination,
+      stationIndex,
+      routeStations
+    } = props;
     //const mapRef = props.getMap();
     console.log(mapRef);
 
     let inits = { lat: 0, lng: 0 };
+    const initRef = React.useRef(inits);
 
-    if (props.initialPos && props.minutes === "Leaving") {
-      inits = props.initCoords;
-    }
+    //const markerRef = React.useRef(inits);
 
     useEffect(() => {
-      if (renderRef.current !== 1);
-      {
+      // if (renderRef.current === 1) {
+      //   return;
+      // }
+      if (renderRef.current !== 1) {
         let mref = props.getMap();
         mapRef2.current = mref;
         console.log(mref);
+        stationRef.current = station;
+        minutesRef.current = minutes;
+        if (minutes === "Leaving") {
+          const dest = routeStations[stationIndex].location;
+
+          var lat = parseFloat(dest[0]),
+            lng = parseFloat(dest[1]),
+            point = { lat: lat, lng: lng };
+          initRef.current = point;
+          markerRef.current.leafletElement.setLatLng(point);
+        } else {
+          const waypoints = routeStations[props.stationIndex - 1].slice;
+          // const dest2 = routeStations[props.stationIndex - 1].location;
+          // waypoints.unshift(dest2);
+          const polyline = L.polyline(waypoints);
+          const dest2 = routeStations[props.stationIndex].location;
+          var lat = parseFloat(dest2[0]),
+            lng = parseFloat(dest2[1]),
+            point = { lat: lat, lng: lng };
+          polyline.addLatLng(point);
+
+          const newPolyline = util.extract(
+            mref.current.leafletElement,
+            polyline,
+            0.5,
+            1
+          );
+          polyline.setLatLngs(newPolyline);
+          polyLineRef.current = polyline;
+          console.log(polyline);
+          startTime.current = 0;
+          currentTime.current = totalTime * 60 * 1000;
+          animated.current = true;
+        }
+
         renderRef.current = 1;
 
         //setMapRef(mref);
@@ -70,23 +117,19 @@ const NewMarker = React.memo(
     // const routeStations = props.routeStations;
     // const waypoints = routeStations[props.stationIndex - 1].slice;
 
-    const totalTime = useMemo(() => {
+    const totalTime2 = useMemo(() => {
       // if (!props.initialPos) {
       //   animated.current = null;
       // }
-      if (
-        (props.minutes === "Leaving" && props.stationIndex === 0) ||
-        (props.initialPos && props.minutes === "Leaving")
-      ) {
+      if (stationRef.current == null || stationRef.current === station) {
         return;
       }
 
-      const routeStations = props.routeStations;
       const waypoints = routeStations[props.stationIndex - 1].slice;
       // const dest2 = routeStations[props.stationIndex - 1].location;
       // waypoints.unshift(dest2);
       const polyline = L.polyline(waypoints);
-      const dest = routeStations[props.stationIndex].location;
+      const dest = routeStations[stationIndex].location;
       var lat = parseFloat(dest[0]),
         lng = parseFloat(dest[1]),
         point = { lat: lat, lng: lng };
@@ -94,42 +137,26 @@ const NewMarker = React.memo(
 
       console.log(polyline);
 
-      if (props.initialPos && props.minutes !== "Leaving") {
-        const mapRef = props.getMap();
-        //let center = polyline.getCenter();
-        const newPolyline = util.extract(
-          mapRef.current.leafletElement,
-          polyline,
-          0.5,
-          1
-        );
-        polyline.setLatLngs(newPolyline);
-        polyLineRef.current = polyline;
-        console.log(polyline);
-        startTime.current = 0;
-        currentTime.current = props.totalTime * 60 * 1000;
-        animated.current = true;
-        return props.minutes;
-      } else if (!props.initialPos) {
-        const currentPosition = markerRef.current.leafletElement.getLatLng();
-        const ratio = util.locateOnLine(
-          mapRef2.current.current.leafletElement,
-          polyline,
-          currentPosition
-        );
-        const newPolyline2 = util.extract(
-          mapRef2.current.current.leafletElement,
-          polyline,
-          ratio,
-          1
-        );
-        polyline.setLatLngs(newPolyline2);
-        polyLineRef.current = polyline;
-        startTime.current = 0;
-        currentTime.current = props.totalTime * 60 * 1000;
-        animated.current = true;
-        return props.minutes;
-      }
+      const currentPosition = markerRef.current.leafletElement.getLatLng();
+      const ratio = util.locateOnLine(
+        mapRef2.current.current.leafletElement,
+        polyline,
+        currentPosition
+      );
+      const newPolyline2 = util.extract(
+        mapRef2.current.current.leafletElement,
+        polyline,
+        ratio,
+        1
+      );
+      polyline.setLatLngs(newPolyline2);
+      polyLineRef.current = polyline;
+      startTime.current = 0;
+      minutesRef.current = minutes;
+      currentTime.current = totalTime * 60 * 1000;
+      animated.current = true;
+      return minutes;
+
       // if (mapRef2.current) {
       //   console.log(mapRef2);
       //   mapRef2.current.current.leafletElement.fitBounds(polyline.getBounds());
@@ -146,47 +173,18 @@ const NewMarker = React.memo(
       // }
 
       //return props.totalTime * 60 * 1000;
-    }, [props.station]);
+    }, [station]);
 
     useLayoutEffect(() => {
-      if (!totalTime || props.minutes === minutesRef.current) {
+      if (minutes === minutesRef.current || minutesRef.current == null) {
         return;
       }
-      if (totalTime !== props.minutes && animated.current) {
+      if (animated.current) {
+        const routeStations2 = props.routeStations;
+        const waypoints2 = routeStations2[props.stationIndex - 1].slice;
         console.log(props.minutes);
         animated.current = null;
-        minutesRef.current = props.minutes;
-      }
-    }, [props.minutes]);
-
-    useLayoutEffect(() => {
-      console.log(props.minutes, props.totalTime);
-      if (
-        minutesRef.current == null ||
-        animated.current ||
-        props.minutes !== minutesRef.current
-      ) {
-        return;
-      }
-
-      const routeStations2 = props.routeStations;
-      const waypoints2 = routeStations2[props.stationIndex - 1].slice;
-
-      // if (
-      //   props.totalTime &&
-      //   Number(props.minutes) !== props.totalTime &&
-      //   props.minutes === "Leaving" &&
-      //   animated
-      // ) {
-      // }
-
-      // if (
-      //   totalTime !== props.minutes && animated.current
-      //   animated.current == null
-      // ) {
-      // setAnimated(null);
-
-      if (minutesRef.current === props.minutes) {
+        minutesRef.current = minutes;
         const currentPoly = polyLineRef.current;
         console.log(currentPoly);
         const currentPosition = markerRef.current.leafletElement.getLatLng();
@@ -218,14 +216,88 @@ const NewMarker = React.memo(
         // const han = newPolyline.getLatLngs();
         currentPoly.setLatLngs(newPolyline);
         startTime.current = 0;
-        if (props.minutes === "Leaving" && ratio < 1) {
+        if (minutes === "Leaving") {
           currentTime.current = 20000;
-        } else if (props.minutes !== "Leaving") {
-          currentTime.current = props.minutes * 60 * 1000;
+        } else if (minutes !== "Leaving") {
+          currentTime.current = minutes * 60 * 1000;
         }
         animated.current = true;
       }
-    }, [props.minutes]);
+    }, [minutes]);
+
+    // useLayoutEffect(() => {
+    //   const dest = routeStations[stationIndex].location;
+    //   var lat = parseFloat(dest[0]),
+    //     lng = parseFloat(dest[1]),
+    //     point = { lat: lat, lng: lng };
+    //   console.log(props.minutes, props.totalTime);
+    //   if (
+    //     minutesRef.current == null ||
+    //     animated.current ||
+    //     minutes !== minutesRef.current ||
+    //     point === initRef.current ||
+    //     polyLineRef.current == null
+    //   ) {
+    //     return;
+    //   }
+
+    //   const routeStations2 = props.routeStations;
+    //   const waypoints2 = routeStations2[props.stationIndex - 1].slice;
+
+    //   // if (
+    //   //   props.totalTime &&
+    //   //   Number(props.minutes) !== props.totalTime &&
+    //   //   props.minutes === "Leaving" &&
+    //   //   animated
+    //   // ) {
+    //   // }
+
+    //   // if (
+    //   //   totalTime !== props.minutes && animated.current
+    //   //   animated.current == null
+    //   // ) {
+    //   // setAnimated(null);
+
+    //   {
+    //     const currentPoly = polyLineRef.current;
+    //     console.log(currentPoly);
+    //     const currentPosition = markerRef.current.leafletElement.getLatLng();
+
+    //     console.log(
+    //       currentPosition,
+    //       currentPoly,
+    //       props.station,
+    //       props.minutes,
+    //       waypoints2[0][waypoints2.length - 1]
+    //     );
+    //     const pos = waypoints2[waypoints2.length - 1];
+    //     const pos2 = [parseFloat(pos[0]), parseFloat(pos[1])];
+    //     const pos3 = L.latLng(pos2[0], pos2[1]);
+    //     // const test = polyLineRef.current.getLatLngs();
+    //     console.log(props.station, props.minutes, currentPosition, currentPoly);
+    //     const ratio = util.locateOnLine(
+    //       mapRef2.current.current.leafletElement,
+    //       currentPoly,
+    //       currentPosition
+    //     );
+    //     const newPolyline = util.extract(
+    //       mapRef2.current.current.leafletElement,
+    //       currentPoly,
+    //       ratio,
+    //       1
+    //     );
+    //     console.log(newPolyline);
+    //     // const han = newPolyline.getLatLngs();
+    //     currentPoly.setLatLngs(newPolyline);
+    //     startTime.current = 0;
+    //     if (minutes === "Leaving") {
+    //       currentTime.current = 20000;
+    //     } else if (minutes !== "Leaving") {
+    //       currentTime.current = minutes * 60 * 1000;
+    //     }
+    //     animated.current = true;
+    //   }
+    // }, [minutes]);
 
     // const [currentLocation, setCurrentLocation] = useState(null);
     // markerRef.current.leafletElement.setLatLng(locations[0]);
@@ -320,7 +392,8 @@ const NewMarker = React.memo(
           ratio >= 1 &&
           minutesRef.current === "Leaving" &&
           animated.current &&
-          !props.zoom
+          !props.zoom &&
+          currentTime.current === 20000
         ) {
           const pos = util.interpolateOnLine(
             mapRef2.current.current.leafletElement,
@@ -330,10 +403,11 @@ const NewMarker = React.memo(
           if (pos) {
             const { latLng } = pos;
             console.log(latLng, props.stataton, props.minutes);
+            initRef.current = latLng;
             markerRef.current.leafletElement.setLatLng(latLng);
+            animated.current = null;
           }
 
-          animated.current = null;
           //setAnimated(null);
         } else if (ratio < 1 && animated.current && !props.zoom) {
           const pos = util.interpolateOnLine(
@@ -346,6 +420,7 @@ const NewMarker = React.memo(
           if (pos) {
             const { latLng } = pos;
             console.log(latLng, props.stataton, props.minutes);
+            initRef.current = latLng;
             markerRef.current.leafletElement.setLatLng(latLng);
           }
         }
@@ -679,19 +754,17 @@ const NewMarker = React.memo(
       <Marker
         icon={iconTrain}
         // autoPan={false}
-        position={
-          !markerRef.current ? inits : markerRef.current.leafletElement._latlng
-        }
-        key={props.id}
+        position={initRef.current}
+        key={id}
         // onClick={handleActiveVehicleUpdate(plate, coors)}
         ref={markerRef}
       >
         <Popup autoClose={false} closeOnClick={false} autoPan={false}>
           <span>
             {" "}
-            Station: <strong>{props.station}</strong> <br />
-            Minutes: <strong>{props.minutes}</strong> <br />
-            Destination: <strong>{props.destination}</strong>
+            Station: <strong>{station}</strong> <br />
+            Minutes: <strong>{minutes}</strong> <br />
+            Destination: <strong>{destination}</strong>
           </span>
         </Popup>
       </Marker>

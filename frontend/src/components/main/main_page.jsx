@@ -400,7 +400,8 @@ class MainPage extends Component {
 
   shouldComponentUpdate(nextState, nextProps) {
     return (
-      this.props.trains !== nextProps.trains ||
+      (!this.props.trains && nextProps.trains) ||
+      this.props.trains.length !== nextProps.trains.length ||
       this.props.loading !== nextProps.loading
     );
   }
