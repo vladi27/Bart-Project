@@ -64,17 +64,17 @@ export const ROUTES = {
     color: "Green",
     hexcolor: "#339933",
     destination: "Daly City",
-    direction: "South",
+    direction: "North",
     abbreviation: ["DALY"]
   },
 
   6: {
     color: "Green",
     hexcolor: "#339933",
-    destination: ["Warm Springs"],
+    destination: "Warm Springs",
     abbreviation: ["WARM"],
 
-    direction: "North"
+    direction: "South"
   },
 
   7: {
@@ -176,21 +176,25 @@ const trainsReducer = (state = [], action) => {
         if (stationETAs) {
           stationETAs.etd.map(departure => {
             let dest = departure.abbreviation;
-            let hex = departure.hexcolor;
+            console.log(dest);
+            if (routeDestination.includes(dest)) {
+              let estimates = departure.estimate;
 
-            if (routeDestination.includes(dest) && routeHexcolor === hex) {
-              let closestDeparture = departure.estimate[0];
-              let minutes = closestDeparture.minutes;
-              let hexcolor = closestDeparture.hexcolor;
-              let direction = closestDeparture.direction;
+              let currentEstimate = find(estimates, function(o) {
+                return o.hexcolor === routeHexcolor;
+              });
 
-              {
+              console.log(currentEstimate, station);
+              if (currentEstimate) {
+                let minutes = currentEstimate.minutes;
+                let hexcolor = currentEstimate.hexcolor;
+                let direction = currentEstimate.direction;
                 if (minutes === "Leaving" && idx !== routeStations.length - 1) {
                   let id = uuidv4();
                   let train = {
                     dest,
                     hexcolor,
-                    direction: routeDirection,
+                    direction: direction,
                     minutes,
                     stationName,
                     route: route.number,
@@ -203,68 +207,101 @@ const trainsReducer = (state = [], action) => {
                   };
                   return newTrains.push(train);
                 } else if (minutes !== "Leaving" && prevStation) {
+                  let count = 0;
+                  estimates.forEach(ele => {
+                    if (ele.hexcolor === routeHexcolor) {
+                      count++;
+                    }
+                  });
                   let prevName = prevStation.stationName;
                   console.log(prevName);
                   let prevETAs = currentEtas[prevName];
-                  console.log(prevName, prevETAs);
-                  let index;
-                  if (prevETAs && prevETAs.etd) {
-                    index = findIndex(prevETAs.etd, function(o) {
-                      return o.abbreviation === dest && o.hexcolor === hexcolor;
+                  let prevDepartures = prevETAs.etd;
+                  if (prevETAs && prevDepartures) {
+                    let prevEstimates = find(prevDepartures, function(o) {
+                      return o.abbreviation === dest;
                     });
-                  }
+                    console.log(prevEstimates, station);
+                    if (prevEstimates) {
+                      let prevTimes = prevEstimates.estimate;
+                      let prevCurrentTime = find(prevTimes, function(o) {
+                        return o.hexcolor === routeHexcolor;
+                      });
+                      console.log(prevTimes, station);
 
-                  console.log(index, stationName);
+                      if (prevCurrentTime) {
+                        let count2 = 0;
+                        prevTimes.forEach(ele => {
+                          if (ele.hexcolor === routeHexcolor) {
+                            count2++;
+                          }
+                        });
+                        let prevMinutes = prevCurrentTime.minutes;
+                        console.log(prevMinutes, station, minutes);
+                        let diff = Number(minutes) - Number(prevMinutes);
+                        if ((diff < 0 && count === count2) || count > count2) {
+                          let id2 = uuidv4();
+                          let lastTrain = false;
 
-                  if (index > -1) {
-                    let prevTrains = prevETAs.etd[index];
-                    let prevMinutes = prevTrains.estimate[0].minutes;
-                    let prevHexcolor = prevTrains.estimate[0].hexcolor;
-                    let prevDirection = prevTrains.estimate[0].direction;
+                          if (idx === routeStations.length - 1) {
+                            lastTrain = true;
+                          }
+                          let train = {
+                            dest,
+                            hexcolor,
+                            direction: direction,
+                            minutes,
+                            // segments,
+                            totalMinutes: Number(minutes),
+                            stationName,
+                            route: route.number,
+                            lastTrain,
+                            initCoords: prevStation.location,
+                            // waypoints: results,
+                            stationIdx: idx,
+                            initialPosition: true,
+                            id: id2,
+                            pos: station.location
+                          };
+                          return newTrains.push(train);
+                        }
+                      } else if (!prevCurrentTime && currentEstimate) {
+                        let id2 = uuidv4();
+                        let lastTrain = false;
 
-                    let diff = Number(minutes) - Number(prevMinutes);
-                    console.log(diff, stationName, prevName, route.number);
-                    let distance;
-
-                    if (
-                      departure.estimate[1] &&
-                      prevTrains.estimate[0].minutes
-                    ) {
-                      distance =
-                        Number(departure.estimate[1].minutes) -
-                        Number(prevMinutes);
-                    }
-                    console.log(diff, distance, minutes);
-
-                    if (
-                      diff < 0 ||
-                      (diff === 0 && Number(minutes) < distance)
-                    ) {
+                        if (idx === routeStations.length - 1) {
+                          lastTrain = true;
+                        }
+                        let train = {
+                          dest,
+                          hexcolor,
+                          direction: direction,
+                          minutes,
+                          // segments,
+                          totalMinutes: Number(minutes),
+                          stationName,
+                          route: route.number,
+                          lastTrain,
+                          initCoords: prevStation.location,
+                          // waypoints: results,
+                          stationIdx: idx,
+                          initialPosition: true,
+                          id: id2,
+                          pos: station.location
+                        };
+                        return newTrains.push(train);
+                      }
+                    } else if (!prevEstimates && currentEstimate) {
                       let id2 = uuidv4();
                       let lastTrain = false;
 
                       if (idx === routeStations.length - 1) {
                         lastTrain = true;
                       }
-                      // const STEPS = Number(minutes) * 60 * 1000;
-                      // let results = [];
-                      // const locations = prevStation.geoSlice;
-                      // const line = lineString(locations);
-
-                      // console.log(line); // our array of lat/lngs
-                      // const distance = lineDistance(line, OPTIONS);
-                      // const chunk = distance / Number(minutes);
-                      // const segments = lineChunk(line, chunk, OPTIONS);
-                      // console.log(line, distance);
-                      // for (let i = 0; i < distance; i += distance / STEPS) {
-                      //   let segment = along(line, i, OPTIONS);
-                      //   results.push(segment.geometry.coordinates);
-                      // }
-
                       let train = {
                         dest,
                         hexcolor,
-                        direction: routeDirection,
+                        direction: direction,
                         minutes,
                         // segments,
                         totalMinutes: Number(minutes),
@@ -283,6 +320,104 @@ const trainsReducer = (state = [], action) => {
                   }
                 }
               }
+
+              //       {
+              //         if (minutes === "Leaving" && idx !== routeStations.length - 1) {
+              //           let id = uuidv4();
+              //           let train = {
+              //             dest,
+              //             hexcolor,
+              //             direction: routeDirection,
+              //             minutes,
+              //             stationName,
+              //             route: route.number,
+              //             lastTrain: false,
+              //             stationIdx: idx,
+              //             id,
+              //             initCoords: station.location,
+              //             pos: station.location,
+              //             initialPosition: true
+              //           };
+              //           return newTrains.push(train);
+              //         } else if (minutes !== "Leaving" && prevStation) {
+              //           console.log(prevName, prevETAs);
+              //           let index;
+              //           if (prevETAs && prevETAs.etd) {
+              //             index = findIndex(prevETAs.etd, function(o) {
+              //               return o.abbreviation === dest && o.hexcolor === hexcolor;
+              //             });
+              //           }
+
+              //           console.log(index, stationName);
+
+              //           if (index > -1) {
+              //             let prevTrains = prevETAs.etd[index];
+              //             let prevMinutes = prevTrains.estimate[0].minutes;
+              //             let prevHexcolor = prevTrains.estimate[0].hexcolor;
+              //             let prevDirection = prevTrains.estimate[0].direction;
+
+              //             let diff = Number(minutes) - Number(prevMinutes);
+              //             console.log(diff, stationName, prevName, route.number);
+              //             let distance;
+
+              //             if (
+              //               departure.estimate[1] &&
+              //               prevTrains.estimate[0].minutes
+              //             ) {
+              //               distance =
+              //                 Number(departure.estimate[1].minutes) -
+              //                 Number(prevMinutes);
+              //             }
+              //             console.log(diff, distance, minutes);
+
+              //             if (
+              //               diff < 0 ||
+              //               (diff === 0 && Number(minutes) < distance)
+              //             ) {
+              //               let id2 = uuidv4();
+              //               let lastTrain = false;
+
+              //               if (idx === routeStations.length - 1) {
+              //                 lastTrain = true;
+              //               }
+              //               // const STEPS = Number(minutes) * 60 * 1000;
+              //               // let results = [];
+              //               // const locations = prevStation.geoSlice;
+              //               // const line = lineString(locations);
+
+              //               // console.log(line); // our array of lat/lngs
+              //               // const distance = lineDistance(line, OPTIONS);
+              //               // const chunk = distance / Number(minutes);
+              //               // const segments = lineChunk(line, chunk, OPTIONS);
+              //               // console.log(line, distance);
+              //               // for (let i = 0; i < distance; i += distance / STEPS) {
+              //               //   let segment = along(line, i, OPTIONS);
+              //               //   results.push(segment.geometry.coordinates);
+              //               // }
+
+              //               let train = {
+              //                 dest,
+              //                 hexcolor,
+              //                 direction: routeDirection,
+              //                 minutes,
+              //                 // segments,
+              //                 totalMinutes: Number(minutes),
+              //                 stationName,
+              //                 route: route.number,
+              //                 lastTrain,
+              //                 initCoords: prevStation.location,
+              //                 // waypoints: results,
+              //                 stationIdx: idx,
+              //                 initialPosition: true,
+              //                 id: id2,
+              //                 pos: station.location
+              //               };
+              //               return newTrains.push(train);
+              //             }
+              //           }
+              //         }
+              //       }
+              //     }
             }
           });
         }
@@ -637,66 +772,93 @@ const trainsReducer = (state = [], action) => {
           nextStationEstimates = etas[nextStationName].etd;
         }
         let currentStationEstimates = etas[lastStation].etd;
-        let currentDepartures = find(currentStationEstimates, {
-          abbreviation: trainDestination,
-          hexcolor: hexcolor
+        let currentDepartures = find(currentStationEstimates, function(o) {
+          return o.abbreviation === trainDestination;
         });
         console.log(currentDepartures);
         console.log(lastMinutes);
 
         if (currentDepartures) {
-          let currentMinutes = currentDepartures.estimate[0].minutes;
-          let currentDirection = currentDepartures.estimate[0].direction;
-          let currentHexcolor = currentDepartures.estimate[0].hexcolor;
-          if (lastMinutes === "Leaving" && currentMinutes !== "Leaving") {
-            let nextDepartures = find(nextStationEstimates, {
-              abbreviation: trainDestination,
-              hexcolor: hexcolor
-            });
+          let currentEst = find(currentDepartures.estimate, function(o) {
+            return o.hexcolor === hexcolor;
+          });
+          if (currentEst) {
+            let currentMinutes = currentEst.minutes;
+            let currentDirection = currentEst.direction;
+            let currentHexcolor = currentEst.hexcolor;
+            if (lastMinutes === "Leaving" && currentMinutes !== "Leaving") {
+              let nextDepartures = find(nextStationEstimates, function(o) {
+                return o.abbreviation === trainDestination;
+              });
 
-            console.log(nextDepartures, train);
+              console.log(nextDepartures, train);
+              let mins;
+              //let totalMins;
+
+              let nextEst = find(nextDepartures.estimate, function(o) {
+                return o.hexcolor === hexcolor;
+              });
+              mins = nextEst.minutes;
+
+              let lastTrain = false;
+              if (train.stationIdx + 1 === stationLength) {
+                lastTrain = true;
+              }
+
+              let newObj = {
+                stationName: nextStationName,
+                stationIdx: train.stationIdx + 1,
+                minutes: mins,
+                // segments,
+                totalMinutes: Number(mins),
+                //departures: nextStationEstimates[index3].estimate[0],
+                lastTrain,
+                //waypoints: results,
+                pos: stations[train.stationIdx + 1].location,
+                initialPosition: false
+              };
+              console.log(newObj);
+
+              let updatedTrain = Object.assign({}, train, newObj);
+              return updatedTrains.push(updatedTrain);
+            } else if (
+              (currentMinutes === "Leaving" &&
+                (lastMinutes !== "Leaving") & !train.lastTrain) ||
+              Number(currentMinutes) < Number(lastMinutes)
+            ) {
+              let updObj = {
+                minutes: currentMinutes,
+                initialPosition: false
+                //departures: currentStationEstimates[index].estimate[0]
+              };
+
+              let updatedTrain = Object.assign({}, train, updObj);
+              console.log(updatedTrain);
+              return updatedTrains.push(updatedTrain);
+            } else {
+              let updatedTrain = Object.assign({}, train, {
+                initialPosition: false
+              });
+              console.log(updatedTrain);
+              return updatedTrains.push(updatedTrain);
+            }
+          } else if (!currentEst && lastMinutes === "Leaving") {
+            let nextDepartures = find(nextStationEstimates, function(o) {
+              return o.abbreviation === trainDestination;
+            });
             let mins;
             //let totalMins;
-            if (nextDepartures) {
-              mins = nextDepartures.estimate[0].minutes;
-            } else if (!nextDepartures) {
-              let nextDepartures2 = find(nextStationEstimates, {
-                direction: trainDirection,
-                abbreviation: trainDestination
-              });
-              console.log(nextDepartures2);
-              let nextDepartures3 = find(nextDepartures2.estimate, {
-                direction: trainDirection,
-                hexcolor: hexcolor
-              });
-              console.log(nextDepartures3);
-              mins = nextDepartures3.minutes;
-            }
+
+            let nextEst = find(nextDepartures.estimate, function(o) {
+              return o.hexcolor === hexcolor;
+            });
+            mins = nextEst.minutes;
 
             let lastTrain = false;
             if (train.stationIdx + 1 === stationLength) {
               lastTrain = true;
             }
-            // }
-            // const STEPS =
-            //   Number(nextDepartures.estimate[0].minutes) * 60 * 1000;
-            // let results = [];
-            // const locations = stations[train.stationIdx].geoSlice;
-            // const line = lineString(locations); // our array of lat/lngs
-            // const distance = lineDistance(line, OPTIONS);
-            // console.log(line, distance);
-            // for (let i = 0; i < distance; i += distance / STEPS) {
-            //   let segment = along(line, i, OPTIONS);
-            //   results.push(segment.geometry.coordinates);
-            // }
 
-            // const locations = stations[train.stationIdx].geoSlice;
-            // const line = lineString(locations);
-
-            // // console.log(line); // our array of lat/lngs
-            // const distance = lineDistance(line, OPTIONS);
-            // const chunk = distance / Number(nextDepartures.estimate[0].minutes);
-            // const segments = lineChunk(line, chunk, OPTIONS);
             let newObj = {
               stationName: nextStationName,
               stationIdx: train.stationIdx + 1,
@@ -713,55 +875,40 @@ const trainsReducer = (state = [], action) => {
 
             let updatedTrain = Object.assign({}, train, newObj);
             return updatedTrains.push(updatedTrain);
-          } else if (
-            (currentMinutes === "Leaving" &&
-              (lastMinutes !== "Leaving") & !train.lastTrain) ||
-            Number(currentMinutes) < Number(lastMinutes)
-          ) {
-            let updObj = {
-              minutes: currentMinutes,
-              initialPosition: false
-              //departures: currentStationEstimates[index].estimate[0]
-            };
-
-            let updatedTrain = Object.assign({}, train, updObj);
-            console.log(updatedTrain);
-            return updatedTrains.push(updatedTrain);
-          } else {
-            let updatedTrain = Object.assign({}, train, {
-              initialPosition: false
-            });
-            console.log(updatedTrain);
-            return updatedTrains.push(updatedTrain);
           }
-        } else if (
-          currentDepartures === undefined &&
-          lastMinutes === "Leaving"
-        ) {
-          let nextDepartures = find(nextStationEstimates, {
-            abbreviation: trainDestination,
-            hexcolor: hexcolor
+        } else if (!currentDepartures && lastMinutes === "Leaving") {
+          let nextDepartures = find(nextStationEstimates, function(o) {
+            return o.abbreviation === trainDestination;
           });
+          let mins;
+          //let totalMins;
 
-          if (nextDepartures) {
-            let lastTrain = false;
-            if (train.stationIdx + 1 === stationLength) {
-              lastTrain = true;
-            }
-            let newObj = {
-              stationName: nextStationName,
-              stationIdx: train.stationIdx + 1,
-              minutes: nextDepartures.estimate[0].minutes,
-              pos: stations[train.stationIdx + 1].location,
-              //departures: nextStationEstimates[index3].estimate[0],
-              lastTrain,
-              initialPosition: false
-            };
-            console.log(newObj);
+          let nextEst = find(nextDepartures.estimate, function(o) {
+            return o.hexcolor === hexcolor;
+          });
+          mins = nextEst.minutes;
 
-            let updatedTrain = Object.assign({}, train, newObj);
-            return updatedTrains.push(updatedTrain);
+          let lastTrain = false;
+          if (train.stationIdx + 1 === stationLength) {
+            lastTrain = true;
           }
+
+          let newObj = {
+            stationName: nextStationName,
+            stationIdx: train.stationIdx + 1,
+            minutes: mins,
+            // segments,
+            totalMinutes: Number(mins),
+            //departures: nextStationEstimates[index3].estimate[0],
+            lastTrain,
+            //waypoints: results,
+            pos: stations[train.stationIdx + 1].location,
+            initialPosition: false
+          };
+          console.log(newObj);
+
+          let updatedTrain = Object.assign({}, train, newObj);
+          return updatedTrains.push(updatedTrain);
         }
       });
 

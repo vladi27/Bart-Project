@@ -14,7 +14,8 @@ const persistenceActionTypes = [
   "ADD_TRAINS",
   "RECEIVE_ROUTE_STATIONS",
   "UPDATE_TRAINS",
-  "UPDATE_CURRENT_ETAS"
+  "UPDATE_CURRENT_ETAS",
+  "RECEIVE_CURRENT_ETAS"
 ];
 
 const persistenceMiddleware = store => dispatch => action => {
@@ -28,7 +29,7 @@ const persistenceMiddleware = store => dispatch => action => {
       handleWaypoints(action, store, newState);
     }
 
-    if (action.type === "UPDATE_CURRENT_ETAS") {
+    if (action.type === "RECEIVE_CURRENT_ETAS") {
       //   console.count();
       //   let newState = store.getState();
       //   handleNewTrains(action, store, newState);

@@ -67,17 +67,17 @@ const ROUTES4 = {
     color: "Green",
     hexcolor: "#339933",
     destination: "Daly City",
-    direction: "South",
+    direction: "North",
     abbreviation: ["DALY"]
   },
 
   6: {
     color: "Green",
     hexcolor: "#339933",
-    destination: ["Warm Springs"],
-    abbreviation: "WARM",
+    destination: "Warm Springs",
+    abbreviation: ["WARM"],
 
-    direction: "North"
+    direction: "South"
   },
 
   7: {
@@ -348,6 +348,7 @@ class MainPage extends Component {
   // }
 
   componentWillUnmount() {
+    this.stopTimer();
     clearInterval(this.interval);
   }
 
@@ -457,7 +458,7 @@ class MainPage extends Component {
       console.count();
       //this.tick();
       {
-        this.props.refetchCurrentEtas();
+        this.props.getCurrentEtas();
         // this.props.getCurrentEtas().then(value => {
         //   this.setState(prev => {
         //     if (prev.etas !== value) {
@@ -602,7 +603,7 @@ class MainPage extends Component {
         let num = prev.currentSelections[0].value;
         this.props.removeTrains(num);
         {
-          this.stopTimer();
+          //this.stopTimer();
           return { currentSelections: value, seconds: 0, hexcolors: [] };
         }
       }
