@@ -7,7 +7,8 @@ import {
   getSchedules,
   getRouteStations,
   fetchCurrentEtas,
-  getStationDepartures
+  getStationDepartures,
+  getStation
 
   // getRouteInfo
 } from "../util/station_api_util";
@@ -15,6 +16,7 @@ import {
 import recentEtasReducer from "../reducers/current_etas_reducer";
 import jsonObj from "../waypoints/all_shapes";
 export const RECEIVE_STATIONS = "RECEIVE_STATIONS";
+export const RECEIVE_STATION = "RECEIVE_STATION";
 export const RECEIVE_INITIAL_SB_INFO = "RECEIVE_INITIAL_SB_INFO";
 export const RECEIVE_INITIAL_NB_INFO = "RECEIVE_INITIAL_NB_INFO";
 export const RECEIVE_ROUTE_INFO = "RECEIVE_ROUTE_INFO";
@@ -140,6 +142,19 @@ const receiveRoutes = routes => {
     routes: routes.data.root.routes.route
   };
 };
+const receiveStations = stations => {
+  return {
+    type: RECEIVE_STATIONS,
+    stations: stations.data.root.stations.station
+  };
+};
+export const receiveStation = station => {
+  console.log(station);
+  return {
+    type: RECEIVE_STATION,
+    station: station.data.root.stations.station
+  };
+};
 const receiveCurrentEtas = (etas, routes, route) => {
   return {
     type: RECEIVE_CURRENT_ETAS,
@@ -200,17 +215,19 @@ export const buildWayPoints = routeNum => ({
   routeNum
 });
 
-export const updateTrains = (routes, etas) => ({
+export const updateTrains = (routes, etas, stations) => ({
   type: UPDATE_TRAINS,
   routes,
-  etas
+  etas,
+  stations
 });
 
-export const createTrains = (route, etas, sub) => ({
+export const createTrains = (route, etas, stations) => ({
   type: CREATE_TRAINS,
   route,
   etas,
-  sub
+
+  stations
 });
 
 export const receiveWayPoints = jsonObj => ({
@@ -295,6 +312,16 @@ export const fetchRoutes = () => dispatch =>
   getRoutes()
     .then(routes => dispatch(receiveRoutes(routes)))
     .catch(err => console.log(err));
+export const fetchStations = () => dispatch =>
+  getStations()
+    .then(stations => dispatch(receiveStations(stations)))
+    .catch(err => console.log(err));
+export const fetchStation = abbr => dispatch => {
+  console.log(abbr);
+  return getStation(abbr)
+    .then(station => dispatch(receiveStation(station)))
+    .catch(err => console.log(err));
+};
 
 export const fetchRouteInfo = () => dispatch =>
   getRouteInfo()

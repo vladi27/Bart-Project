@@ -11,6 +11,7 @@ import {
   updateTrains,
   addTrains,
   removeTrains,
+  fetchStations,
   removeTrain
 } from "../../actions/station_actions";
 import getCombinedState from "../../selectors/loading_selector";
@@ -25,7 +26,7 @@ const mapStateToProps = state => {
     // trains: createInitialPosition(state),
     trains: state.trains,
     waypoints: state.waypoints,
-    allStations: state.stations,
+    stations: state.stations,
     etas: state.etas,
     loading: getCombinedState(state)
   };
@@ -34,6 +35,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     fetchRoutes: () => dispatch(fetchRoutes()),
+    fetchStations: () => dispatch(fetchStations()),
     getCurrentEtas: (routes, route) => dispatch(getCurrentEtas(routes, route)),
     refetchCurrentEtas: (routes, route) =>
       dispatch(refetchCurrentEtas(routes, route)),
@@ -44,7 +46,8 @@ const mapDispatchToProps = dispatch => {
     removeTrain: id => dispatch(removeTrain(id)),
     receiveWayPoints: data => dispatch(receiveWayPoints(data)),
 
-    createTrains: (route, etas) => dispatch(createTrains(route, etas)),
+    createTrains: (route, etas, stations) =>
+      dispatch(createTrains(route, etas, stations)),
     updateTrains: (routeNum, etas, stations) =>
       dispatch(updateTrains(routeNum, etas, stations)),
     addTrains: route => dispatch(addTrains(route))

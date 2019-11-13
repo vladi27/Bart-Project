@@ -55,7 +55,8 @@ const NewMarker = React.memo(
       totalTime,
       destination,
       stationIndex,
-      routeStations
+      routeStations,
+      zoom
     } = props;
     //const mapRef = props.getMap();
     console.log(mapRef);
@@ -74,9 +75,9 @@ const NewMarker = React.memo(
         mapRef2.current = mref;
         console.log(mref);
         stationRef.current = station;
-        minutesRef.current = minutes;
-        if (minutes === "Leaving") {
-          const dest = routeStations[stationIndex].location;
+        minutesRef.current = props.minutes;
+        if (props.minutes === "Leaving") {
+          const dest = routeStations[props.stationIndex].location;
 
           var lat = parseFloat(dest[0]),
             lng = parseFloat(dest[1]),
@@ -173,7 +174,7 @@ const NewMarker = React.memo(
       // }
 
       //return props.totalTime * 60 * 1000;
-    }, [station]);
+    }, [props.station]);
 
     useLayoutEffect(() => {
       if (minutes === minutesRef.current || minutesRef.current == null) {
@@ -223,7 +224,7 @@ const NewMarker = React.memo(
         }
         animated.current = true;
       }
-    }, [minutes]);
+    }, [props.minutes]);
 
     // useLayoutEffect(() => {
     //   const dest = routeStations[stationIndex].location;

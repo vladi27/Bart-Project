@@ -1,5 +1,6 @@
 import {
   RECEIVE_STATIONS,
+  RECEIVE_STATION,
   RECEIVE_CURRENT_ETAS,
   RECEIVE_STATION_ETA
 } from "../actions/station_actions";
@@ -12,10 +13,18 @@ const StationsReducer = (state = {}, action) => {
     case RECEIVE_STATIONS:
       let newObj = {};
       action.stations.forEach(ele => {
+        console.log(ele);
         newObj[ele.abbr] = ele;
       });
 
       return merge({}, state, newObj);
+    case RECEIVE_STATION:
+      let current = merge({}, state);
+      console.log(current);
+      let stnAbbr = action.station.abbr;
+      current[stnAbbr] = action.station;
+
+      return merge({}, current);
 
     // case RECEIVE_CURRENT_ETAS:
     //   const allEtas = action.etas;

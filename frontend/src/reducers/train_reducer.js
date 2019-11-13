@@ -97,7 +97,7 @@ export const ROUTES = {
   }
 };
 const trainsReducer = (state = [], action) => {
-  Object.freeze(state);
+  //Object.freeze(state);
   switch (action.type) {
     case CREATE_TRAINS:
       const route = action.route;
@@ -111,6 +111,7 @@ const trainsReducer = (state = [], action) => {
       const routeHexcolor = route.hexcolor;
       let routeStations = route.stations;
       let currentTrains = [];
+      const allStat = action.stations;
 
       let sub = action.sub;
 
@@ -171,6 +172,7 @@ const trainsReducer = (state = [], action) => {
 
       routeStations.map((station, idx) => {
         let stationName = station.stationName;
+        let order = station.order;
         let stationETAs = currentEtas[stationName];
         let prevStation = routeStations[idx - 1];
         if (stationETAs) {
@@ -181,9 +183,7 @@ const trainsReducer = (state = [], action) => {
               let estimates = departure.estimate;
 
               let currentEstimate = find(estimates, function(o) {
-                return (
-                  o.hexcolor === routeHexcolor && o.direction === routeDirection
-                );
+                return o.hexcolor === routeHexcolor;
               });
 
               console.log(currentEstimate, station);
@@ -191,11 +191,13 @@ const trainsReducer = (state = [], action) => {
                 let minutes = currentEstimate.minutes;
                 let hexcolor = currentEstimate.hexcolor;
                 let direction = currentEstimate.direction;
+                //let platfrom = currentEstimate.plarf;
                 if (minutes === "Leaving" && idx !== routeStations.length - 1) {
                   let id = uuidv4();
                   let train = {
                     dest,
                     hexcolor,
+                    //platform: platform,
                     direction: direction,
                     minutes,
                     stationName,
@@ -229,12 +231,46 @@ const trainsReducer = (state = [], action) => {
                     console.log(prevEstimates, station);
                     if (prevEstimates) {
                       let prevTimes = prevEstimates.estimate;
-                      let prevCurrentTime = find(prevTimes, function(o) {
-                        return (
-                          o.hexcolor === routeHexcolor &&
-                          o.direction === routeDirection
-                        );
-                      });
+                      let nextInfo = allStat[prevName];
+                      let num = route.number;
+                      let placeholder = "ROUTE" + " " + num;
+                      console.log(placeholder, nextInfo);
+                      let dir2;
+                      let prevCurrentTime = null;
+
+                      let northRoutes = nextInfo.north_routes.route;
+                      let southRoutes = nextInfo.south_routes.route;
+                      if (!northRoutes && !southRoutes) {
+                        prevCurrentTime = find(prevTimes, function(o) {
+                          return o.hexcolor === routeHexcolor;
+                        });
+                      } else if (northRoutes && !southRoutes) {
+                        dir2 = "North";
+                        prevCurrentTime = find(prevTimes, function(o) {
+                          return (
+                            o.hexcolor === routeHexcolor && o.direction === dir2
+                          );
+                        });
+                      } else if (!northRoutes && southRoutes) {
+                        dir2 = "South";
+                        prevCurrentTime = find(prevTimes, function(o) {
+                          return (
+                            o.hexcolor === routeHexcolor && o.direction === dir2
+                          );
+                        });
+                      } else if (northRoutes && southRoutes) {
+                        console.log(northRoutes, southRoutes);
+                        if (northRoutes.includes(placeholder)) {
+                          dir2 = "North";
+                        } else if (southRoutes.includes(placeholder)) {
+                          dir2 = "South";
+                        }
+                        prevCurrentTime = find(prevTimes, function(o) {
+                          return (
+                            o.hexcolor === routeHexcolor && o.direction === dir2
+                          );
+                        });
+                      }
                       console.log(prevTimes, station);
 
                       if (prevCurrentTime) {
@@ -287,7 +323,7 @@ const trainsReducer = (state = [], action) => {
                           let train = {
                             dest,
                             hexcolor,
-                            direction: direction,
+                            direction: dir2,
                             minutes,
                             // segments,
                             totalMinutes: Number(minutes),
@@ -505,9 +541,7 @@ const trainsReducer = (state = [], action) => {
                 let estimates = departure.estimate;
 
                 let currentEstimate = find(estimates, function(o) {
-                  return (
-                    o.hexcolor === trainHexcolor && routeDir === o.direction
-                  );
+                  return o.hexcolor === trainHexcolor;
                 });
 
                 console.log(currentEstimate, station);
@@ -553,16 +587,20 @@ const trainsReducer = (state = [], action) => {
       });
       console.log(newTrain5);
       const uniques = uniqBy(newTrain5, "id2");
-      console.log(uniques);
-      const newT6 = [...uniques, ...currentTrains5];
-      // const uniques = uniqWith(
-      //   newT6,
-      //   (trainA, trainB) =>
-      //     (trainA.route === trainB.route &&
-      //       trainA.stationName !== trainB.stationName) ||
-      //     trainA.route !== trainB.route
-      // );
-      return newT6;
+      console.log(uniques, currentTrains5);
+      if (uniques.length === 0) {
+        return [...state];
+      } else {
+        const newT6 = [...uniques, ...currentTrains5];
+        // const uniques = uniqWith(
+        //   newT6,
+        //   (trainA, trainB) =>
+        //     (trainA.route === trainB.route &&
+        //       trainA.stationName !== trainB.stationName) ||
+        //     trainA.route !== trainB.route
+        // );
+        return newT6;
+      }
 
     // const currentRouteHexcolor = currentRoute.hexcolor;
 
@@ -744,6 +782,7 @@ const trainsReducer = (state = [], action) => {
       let allTrains = [...state];
 
       let routes = action.routes;
+      const allStations = action.stations;
       // if (action.routeNum === "2") {
       //   stations = action.stations.slice(0, -3);
       // } else if (action.routeNum === "1") {
@@ -791,16 +830,30 @@ const trainsReducer = (state = [], action) => {
                 return o.abbreviation === trainDestination;
               });
 
-              console.log(nextDepartures, train);
+              let nextInfo = allStations[nextStationName];
+              let placeholder = "ROUTE" + " " + routeNum;
+              console.log(placeholder, nextInfo);
+              let dir2;
+
+              let northRoutes = nextInfo.north_routes.route;
+              let southRoutes = nextInfo.south_routes.route;
+              console.log(northRoutes, southRoutes);
+              if (northRoutes.includes(placeholder)) {
+                dir2 = "North";
+              } else if (southRoutes.includes(placeholder)) {
+                dir2 = "South";
+              }
+
+              console.log(nextDepartures, train, dir2);
               let mins;
               //let totalMins;
 
               let nextEst = find(nextDepartures.estimate, function(o) {
-                return (
-                  o.hexcolor === hexcolor && o.direction === trainDirection
-                );
+                return o.hexcolor === hexcolor && o.direction === dir2;
               });
+              console.log(nextEst);
               mins = nextEst.minutes;
+              let direc = nextEst.direction;
 
               let lastTrain = false;
               if (train.stationIdx + 1 === stationLength) {
@@ -809,10 +862,12 @@ const trainsReducer = (state = [], action) => {
 
               let newObj = {
                 stationName: nextStationName,
+
                 stationIdx: train.stationIdx + 1,
                 minutes: mins,
                 // segments,
                 totalMinutes: Number(mins),
+                direction: direc,
                 //departures: nextStationEstimates[index3].estimate[0],
                 lastTrain,
                 //waypoints: results,
@@ -852,10 +907,30 @@ const trainsReducer = (state = [], action) => {
             // let mins;
             //let totalMins;
 
+            let nextInfo = allStations[nextStationName];
+            let placeholder = "ROUTE" + " " + routeNum;
+            console.log(placeholder, nextInfo);
+            let dir2;
+
+            let northRoutes = nextInfo.north_routes.route;
+            let southRoutes = nextInfo.south_routes.route;
+            console.log(northRoutes, southRoutes);
+            if (northRoutes.includes(placeholder)) {
+              dir2 = "North";
+            } else if (southRoutes.includes(placeholder)) {
+              dir2 = "South";
+            }
+
+            console.log(nextDepartures, train, dir2);
+            let mins;
+            //let totalMins;
+
             let nextEst = find(nextDepartures.estimate, function(o) {
-              return o.hexcolor === hexcolor && o.direction === trainDirection;
+              return o.hexcolor === hexcolor && o.direction === dir2;
             });
-            let mins = nextEst.minutes;
+            console.log(nextEst);
+            mins = nextEst.minutes;
+            let direc = nextEst.direction;
 
             let lastTrain = false;
             if (train.stationIdx + 1 === stationLength) {
@@ -864,10 +939,12 @@ const trainsReducer = (state = [], action) => {
 
             let newObj = {
               stationName: nextStationName,
+
               stationIdx: train.stationIdx + 1,
               minutes: mins,
               // segments,
               totalMinutes: Number(mins),
+              direction: direc,
               //departures: nextStationEstimates[index3].estimate[0],
               lastTrain,
               //waypoints: results,
@@ -883,13 +960,30 @@ const trainsReducer = (state = [], action) => {
           let nextDepartures = find(nextStationEstimates, function(o) {
             return o.abbreviation === trainDestination;
           });
+          let nextInfo = allStations[nextStationName];
+          let placeholder = "ROUTE" + " " + routeNum;
+          console.log(placeholder, nextInfo);
+          let dir2;
+
+          let northRoutes = nextInfo.north_routes.route;
+          let southRoutes = nextInfo.south_routes.route;
+          console.log(northRoutes, southRoutes);
+          if (northRoutes.includes(placeholder)) {
+            dir2 = "North";
+          } else if (southRoutes.includes(placeholder)) {
+            dir2 = "South";
+          }
+
+          console.log(nextDepartures, train, dir2);
           let mins;
           //let totalMins;
 
           let nextEst = find(nextDepartures.estimate, function(o) {
-            return o.hexcolor === hexcolor && o.direction === trainDirection;
+            return o.hexcolor === hexcolor && o.direction === dir2;
           });
+          console.log(nextEst);
           mins = nextEst.minutes;
+          let direc = nextEst.direction;
 
           let lastTrain = false;
           if (train.stationIdx + 1 === stationLength) {
@@ -898,10 +992,12 @@ const trainsReducer = (state = [], action) => {
 
           let newObj = {
             stationName: nextStationName,
+
             stationIdx: train.stationIdx + 1,
             minutes: mins,
             // segments,
             totalMinutes: Number(mins),
+            direction: direc,
             //departures: nextStationEstimates[index3].estimate[0],
             lastTrain,
             //waypoints: results,

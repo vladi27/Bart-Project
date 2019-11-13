@@ -41,6 +41,12 @@ export const getStations = () => {
     "https://api.bart.gov/api/stn.aspx?cmd=stns&key=MW9S-E7SL-26DU-VV8V&json=y"
   );
 };
+export const getStation = abbr => {
+  console.log(abbr);
+  return axios.get(
+    `http://api.bart.gov/api/stn.aspx?cmd=stninfo&orig=${abbr}&key=MW9S-E7SL-26DU-VV8V&json=y`
+  );
+};
 export const getRoutes = () => {
   return axios.get(
     "http://api.bart.gov/api/route.aspx?cmd=routes&key=MW9S-E7SL-26DU-VV8V&date=now&json=y"

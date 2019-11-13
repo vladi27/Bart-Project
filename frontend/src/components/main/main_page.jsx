@@ -220,6 +220,7 @@ class MainPage extends Component {
   componentDidMount() {
     const routeIds = ["1", "2", "3", "4", "5", "6", "7", "8"];
     const routes = this.props.routes;
+
     // this.props.receiveWayPoints(jsonObject);
     // this.props.fetchSpaceStation();
     // then(response =>
@@ -238,6 +239,7 @@ class MainPage extends Component {
     console.count();
     routeIds.map(id => this.props.fetchRouteStations(id));
     this.props.getCurrentEtas();
+    this.props.fetchStations();
     //   .then(response => this.setState({ etas: this.props.etas }));
 
     // this.props.fetchRouteSchedules(1);
@@ -553,6 +555,7 @@ class MainPage extends Component {
 
     const routes = this.props.routes;
     const etas = this.props.etas;
+    const stations = this.props.stations;
 
     // difference = this.state.currentSelections
     //   .slice()
@@ -567,7 +570,7 @@ class MainPage extends Component {
         let num = value[0].value;
         let route = routes[num];
         let color = route.hexcolor;
-        this.props.createTrains(route, etas);
+        this.props.createTrains(route, etas, stations);
         return { currentSelections: value, hexcolors: [color] };
 
         // this.handleTimer();
@@ -585,7 +588,7 @@ class MainPage extends Component {
         let newColor = [...prev.hexcolors, color];
 
         let route = routes[num];
-        this.props.createTrains(route, etas);
+        this.props.createTrains(route, etas, stations);
         return { currentSelections: value, hexcolors: newColor };
       } else if (value && value.length < prev.currentSelections.length) {
         let difference = this.state.currentSelections
@@ -820,7 +823,7 @@ class MainPage extends Component {
             watch={true}
             enableHighAccuracy={true}
             center={position}
-            wheelDebounceTime={60}
+            wheelDebounceTime={10}
             animate={true}
             zoom={11}
             onzoomstart={this.handleZoomStart.bind(this)}
