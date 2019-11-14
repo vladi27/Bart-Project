@@ -223,8 +223,9 @@ const trainsReducer = (state = [], action) => {
                   let prevName = prevStation.stationName;
                   console.log(prevName);
                   let prevETAs = currentEtas[prevName];
-                  let prevDepartures = prevETAs.etd;
-                  if (prevETAs && prevDepartures) {
+
+                  if (prevETAs && prevETAs.etd) {
+                    let prevDepartures = prevETAs.etd;
                     let prevEstimates = find(prevDepartures, function(o) {
                       return o.abbreviation === dest;
                     });
@@ -311,11 +312,13 @@ const trainsReducer = (state = [], action) => {
                         // }
 
                         let prevMinutes = prevCurrentTime.minutes;
+
                         console.log(prevMinutes, station, minutes);
                         let diff = Number(minutes) - Number(prevMinutes);
                         if (diff < 0) {
                           let id2 = uuidv4();
                           let lastTrain = false;
+                          //let dir3 = prevCurrentTime.direction;
 
                           if (idx === routeStations.length - 1) {
                             lastTrain = true;
@@ -323,7 +326,7 @@ const trainsReducer = (state = [], action) => {
                           let train = {
                             dest,
                             hexcolor,
-                            direction: dir2,
+                            direction,
                             minutes,
                             // segments,
                             totalMinutes: Number(minutes),
@@ -501,7 +504,7 @@ const trainsReducer = (state = [], action) => {
     // const newTrainsforRoute = { [routeNum4]: curTrains };
 
     case ADD_TRAINS:
-      const currentTrains5 = [...state];
+      const currentTrains5 = state.slice();
       const curFirstTrains = currentTrains5.filter(train => train.firstTrain);
       const currentEtas2 = action.etas;
       const newTrain5 = [];
@@ -581,15 +584,13 @@ const trainsReducer = (state = [], action) => {
               }
             });
           });
-        } else {
-          return;
         }
       });
       console.log(newTrain5);
       const uniques = uniqBy(newTrain5, "id2");
       console.log(uniques, currentTrains5);
       if (uniques.length === 0) {
-        return [...state];
+        return state;
       } else {
         const newT6 = [...uniques, ...currentTrains5];
         // const uniques = uniqWith(

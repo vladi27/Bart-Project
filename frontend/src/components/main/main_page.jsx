@@ -402,8 +402,7 @@ class MainPage extends Component {
 
   shouldComponentUpdate(nextState, nextProps) {
     return (
-      (!this.props.trains && nextProps.trains) ||
-      this.props.trains.length !== nextProps.trains.length ||
+      this.props.trains !== nextProps.trains ||
       this.props.loading !== nextProps.loading
     );
   }
@@ -412,44 +411,6 @@ class MainPage extends Component {
   //   if (this.props.trains !== this.state.trains) {
   //     this.setState({ trains: this.props.trains });
   //   }
-  // }
-
-  // drawPolyline() {
-  //   // console.log(this.state);
-  //   const currentRoutes = this.state.currentSelections;
-  //   const routes = this.props.routes;
-  //   const allStations = this.props.allStations;
-
-  //   const colors = currentRoutes.map(ele => {
-  //     return ROUTES4[ele.value].color;
-  //   });
-  //   console.log(colors);
-
-  //   const uniques = uniq(colors);
-  //   console.log(uniques);
-
-  //   const routes2 = uniques.map(ele => routes[RouteColors[ele]]);
-  //   console.log(routes2);
-
-  //   return routes2.map(route => {
-  //     let hexcolor = route.hexcolor;
-  //     console.log(hexcolor);
-  //     let waypoints3 = [this.props.waypoints[Number(route.number) - 1]];
-  //     return waypoints3.map(ele => {
-  //       console.log(ele);
-  //       return <Polyline positions={ele.waypoints} key={hexcolor} />;
-  //     });
-  //   });
-  // }
-
-  //   updateValue(value) {
-  //   this.setState({ value: value });
-  // },
-  // getValue: function() {
-  //   if (!this.state.value) {
-  //     return 'Some default text';
-  //   }
-  //   return this.state.value;
   // }
 
   handleTimer() {
@@ -823,7 +784,7 @@ class MainPage extends Component {
             watch={true}
             enableHighAccuracy={true}
             center={position}
-            wheelDebounceTime={10}
+            wheelDebounceTime={60}
             animate={true}
             zoom={11}
             onzoomstart={this.handleZoomStart.bind(this)}

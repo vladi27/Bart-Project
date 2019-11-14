@@ -79,7 +79,7 @@ const Trains = React.memo(
 
     return (
       <>
-        {trains.map((train, index) => {
+        {props.trains.map((train, index) => {
           let num = train.route;
           let routeStations = props.routes[num].stations;
           return (
@@ -100,7 +100,7 @@ const Trains = React.memo(
               currentSlice={train.currentSlice}
               ref={ins => (refs.current[index] = ins)}
               getMap={props.getMap}
-              //zoom={zoom}
+              //zoom={zoomRef.current}
             />
           );
         })}
