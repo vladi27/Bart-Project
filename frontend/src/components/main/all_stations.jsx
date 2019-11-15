@@ -22,6 +22,7 @@ class AllStations extends Component {
               station={station}
               fetchStationDepartures={this.props.fetchStationDepartures}
               key={station.abbr}
+              name={station.abbr}
             />
           );
         })}

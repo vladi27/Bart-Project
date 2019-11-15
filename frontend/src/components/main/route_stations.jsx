@@ -96,7 +96,12 @@ const RouteStations = React.memo(({ currentRoutes, routes }) => {
       console.log(station);
       let abbr = ele2.stationName;
       return (
-        <Station station={station} hexcolor={hexcolor} key={abbr}></Station>
+        <Station
+          station={station}
+          hexcolor={hexcolor}
+          key={abbr}
+          name={abbr}
+        ></Station>
       );
     });
   });

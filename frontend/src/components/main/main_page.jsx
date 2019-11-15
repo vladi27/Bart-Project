@@ -24,6 +24,7 @@ import RouteStations from "./route_stations";
 import { convertSpeed } from "geolib";
 import Trains from "./trains";
 // const data = require("json!./../../src/waypoints/all_shapes");
+const isEqual = require("react-fast-compare");
 
 const override = css`
   display: block;
@@ -200,7 +201,8 @@ class MainPage extends Component {
       refs: [],
       hexcolors: [],
       update: 0,
-      trains: []
+      trains: [],
+      zoom: 11
     };
     this.timer = 0;
     //this.renderStops = this.renderStops.bind(this);
@@ -402,7 +404,7 @@ class MainPage extends Component {
 
   shouldComponentUpdate(nextState, nextProps) {
     return (
-      this.props.trains !== nextProps.trains ||
+      // !isEqual(this.props.trains, nextProps.trains) ||
       this.props.loading !== nextProps.loading
     );
   }
@@ -585,13 +587,16 @@ class MainPage extends Component {
 
   handleZoomStart() {
     if (this.trainsRef.current) {
-      this.trainsRef.current.updateZoom();
+      this.trainsRef.current.updateZoom(true);
     }
+    this.zoom = true;
   }
-  handleZoomEnd() {
+  handleZoomEnd(e) {
     if (this.trainsRef.current) {
-      this.trainsRef.current.updateZoom();
+      this.trainsRef.current.updateZoom(false);
     }
+    this.zoom = null;
+    this.setState({ zoom: e.target._zoom });
   }
   // handleChange(value) {
   //   let difference = [];
@@ -781,18 +786,20 @@ class MainPage extends Component {
           </div> */}
 
           <Map
-            watch={true}
-            enableHighAccuracy={true}
+            //watch={true}
+            //enableHighAccuracy={true}
             center={position}
-            wheelDebounceTime={60}
-            animate={true}
-            zoom={11}
+            // wheelDebounceTime={10}
+            // animate={true}
+            zoom={this.state.zoom}
+            closePopupOnClick={false}
             onzoomstart={this.handleZoomStart.bind(this)}
             onzoomend={this.handleZoomEnd.bind(this)}
-            //markerZoomAnimation={false}
+            markerZoomAnimation={false}
             //maxZoom={13}
-            //minZoom={12}
+            minZoom={11}
             //maxBounds={bounds}
+
             preferCanvas={true}
             ref={this.mapRef}
           >
@@ -815,7 +822,7 @@ class MainPage extends Component {
                     removeTrain={this.props.removeTrain}
                     getMap={this.getMap.bind(this)}
                     routes={routes}
-                    zoom={this.zoom}
+                    //zoom={this.zoom}
                   />
                 </React.Fragment>
                 {/* {trains.map((train, idx) => {

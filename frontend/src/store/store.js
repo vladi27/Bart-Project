@@ -10,6 +10,7 @@ import {
   receiveStation
 } from "../actions/station_actions";
 import * as APIUtil from "../util/station_api_util";
+import createDebounce from "redux-debounced";
 
 import rootReducer from "../reducers/root_reducer";
 
@@ -112,7 +113,7 @@ const configureStore = (preloadedState = {}) =>
   createStore(
     rootReducer,
     preloadedState,
-    applyMiddleware(thunk, logger, persistenceMiddleware)
+    applyMiddleware(thunk, logger, persistenceMiddleware, createDebounce())
   );
 
 export default configureStore;

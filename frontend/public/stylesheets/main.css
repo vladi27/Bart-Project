@@ -52,6 +52,27 @@
   text-align: center;
   background: #ffff33;
 }
+
+.custom-div-icon929c00 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #929c00;
+}
+.custom-div-icon903e00 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #903e00;
+}
 .custom-div-iconff9933 i {
   position: absolute;
   width: 22px;
@@ -116,8 +137,8 @@
   border-radius: 15px;
   border: 1px solid #fff;
   display: inline-block;
-  width: auto !important;
-  height: auto !important;
+  /* width: auto !important;
+ // height: auto !important; */
   width: 30px !important;
   text-align: center;
   height: 30px !important;

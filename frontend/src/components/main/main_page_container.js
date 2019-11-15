@@ -59,4 +59,4 @@ const DebouncedMain = debounceRender(MainPage);
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(MainPage);
+)(DebouncedMain);

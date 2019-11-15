@@ -1,13 +1,11 @@
-import { Map, TileLayer, CircleMarker, Polyline } from "react-leaflet";
+import { Map, TileLayer, CircleMarker, Polyline, Popup } from "react-leaflet";
 import React, { Component, PureComponent } from "react";
 
-const Station = ({ station, hexcolor }) => {
+const Station = ({ station, hexcolor, name }) => {
   return (
-    <CircleMarker
-      key={`marker-${hexcolor}`}
-      center={station}
-      radius={10}
-    ></CircleMarker>
+    <CircleMarker key={`marker-${hexcolor}`} center={station} radius={6}>
+      <Popup>{name}</Popup>
+    </CircleMarker>
   );
 };
 //   extends PureComponent {

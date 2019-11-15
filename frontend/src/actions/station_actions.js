@@ -196,6 +196,11 @@ const receiveRouteSchedules = (schedules, id) => ({
 
 export const addTrains = (routes, etas) => ({
   type: ADD_TRAINS,
+  meta: {
+    debounce: {
+      time: 300
+    }
+  },
   routes,
   etas
 });
@@ -218,6 +223,11 @@ export const buildWayPoints = routeNum => ({
 export const updateTrains = (routes, etas, stations) => ({
   type: UPDATE_TRAINS,
   routes,
+  meta: {
+    debounce: {
+      time: 400
+    }
+  },
   etas,
   stations
 });
