@@ -73,6 +73,17 @@
   text-align: center;
   background: #903e00;
 }
+.custom-div-icon003d00 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #003d00;
+}
+
 .custom-div-iconff9933 i {
   position: absolute;
   width: 22px;
@@ -82,6 +93,16 @@
   margin: 10px auto;
   text-align: center;
   background: #ff9933;
+}
+.custom-div-icon890000 i {
+  position: absolute;
+  width: 22px;
+  font-size: 22px;
+  left: 0;
+  right: 0;
+  margin: 10px auto;
+  text-align: center;
+  background: #890000;
 }
 .custom-div-icon339933 i {
   position: absolute;
