@@ -27,7 +27,7 @@
     "passport-jwt": "^4.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "validator": "^10.9.0",
+    "validator": "^13.7.0",
     "webworker-threads": "^0.7.17"
   },
   "devDependencies": {
